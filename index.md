@@ -221,7 +221,7 @@ The arm will be tested in a controlled lab environment with:
 | 9 | ROS2 & Gazebo digital twin |
 | 10–11 | Testing, debugging, optimization |
 | 12 | Final demo & documentation |
-
+!()
 ---
 
 ## Bibliography
@@ -229,7 +229,7 @@ The arm will be tested in a controlled lab environment with:
 1. Corke, P. (2017). *Robotics, Vision and Control*. Springer.
 2. OpenCV Documentation. [https://docs.opencv.org/](https://docs.opencv.org/)
 3. Arduino Reference. [https://www.arduino.cc/reference/en/](https://www.arduino.cc/reference/en/)
-4. ROS2 Documentation. [https://docs.ros.org/](https://docs.ros.org/)
+4. ROS2 Documentation. [https://docs.ros.org/]([https://docs.ros.org/](https://docs.google.com/spreadsheets/d/1vQUNIplIJCaTI_P2jxYhI44QH2mPTx2C/edit?usp=sharing&ouid=106065383605085710301&rtpof=true&sd=true))
 5. MG996R Servo Datasheet. TowerPro.
 6. JGA25-370 DC Gearmotor Datasheet.
 
