@@ -54,6 +54,5 @@ cv2.destroyAllWindows()
 ## CAD Model
 
 *(Link to Inventor files or embed screenshots.)*
-
-<!-- Example: ![CAD Model](assets/cad_model.png) -->
+ ![CAD Model](CAD.PNG) 
 
