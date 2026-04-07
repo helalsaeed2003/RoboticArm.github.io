@@ -52,7 +52,5 @@ cv2.destroyAllWindows()
 ---
 
 ## CAD Model
-
-*(Link to Inventor files or embed screenshots.)*
  ![CAD Model](CAD.PNG) 
 
