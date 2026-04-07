@@ -9,6 +9,10 @@
 - **Forward/Inverse Kinematics:** Calculated using DH parameters for the 4-DOF arm; implemented in Python using `numpy`.
 - **Workspace analysis:** ~400 mm reach envelope modeled in CAD (Autodesk Inventor).
 
+### CAD Model
+
+![CAD Model](../media/CAD.png)
+
 *(Detailed kinematic equations and DH parameter table to be added.)*
 
 ## Stability and Feedback Control
