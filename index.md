@@ -209,7 +209,7 @@ The arm will be tested in a controlled lab environment with:
 
 ### Gantt Chart
 
-*[Link to updated Gantt Chart (Excel/MS Project)](#)*
+*[Link to updated Gantt Chart (Excel/MS Project)](https://docs.google.com/spreadsheets/d/1vQUNIplIJCaTI_P2jxYhI44QH2mPTx2C/edit?usp=sharing&ouid=106065383605085710301&rtpof=true&sd=true)
 
 | Week | Milestone |
 |------|-----------|
