@@ -22,7 +22,7 @@
 <!-- Example: ![CAD Model](assets/cad_model.png) -->
 
 ## Camera Detection Code
-//import cv2
+// import cv2
 cap = cv2.VideoCapture(1)
 count = 0
 while True:
