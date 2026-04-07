@@ -11,7 +11,7 @@
 
 ### CAD Model
 
-![CAD Model](../media/CAD.png)
+![CAD Model](../Media/CAD.png)
 
 *(Detailed kinematic equations and DH parameter table to be added.)*
 
