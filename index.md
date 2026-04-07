@@ -196,7 +196,7 @@ The arm will be tested in a controlled lab environment with:
 ## Results
 
 *To be updated with experimental data and test outcomes.*
-![video](https://drive.google.com/file/d/1za2xlb5PNdxxTFzdW1wSl5EE5Ca-O-1R/view?usp=sharing)
+![video](WhatsApp Video 2026-04-04 at 9.35.31 PM.mp4)
 ---
 
 ## Discussion
