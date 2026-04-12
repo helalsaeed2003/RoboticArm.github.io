@@ -1,3 +1,0 @@
-2 motors
-ServoBase	Moves the base servo	3	SLIDER	X Axis	0	1.0	0.0
-ServoShoulder	Moves the shoulder servo	3	SLIDER	Y Axis	0	1.0	0.0
