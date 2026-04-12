@@ -54,7 +54,7 @@ This project presents the design and development of a 4-DOF pick-and-place robot
 
 ---
 
-## [Project Management – Gantt Chart](Pages/gantt.html)
+## [Project Management – Gantt Chart](Pages/gantt.md)
 
 ---
 
