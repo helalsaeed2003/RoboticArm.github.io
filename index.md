@@ -26,7 +26,7 @@ This project presents the design and development of a 4-DOF pick-and-place robot
 
 ---
 
-## [Background – Literature Review](pages/literature-review.md)
+## [Background – Literature Review](Pages/literature-review.md)
 
 ---
 
@@ -34,39 +34,39 @@ This project presents the design and development of a 4-DOF pick-and-place robot
 
 ### Engineering Analysis
 
-- [Sensing and Signal Architecture](pages/sensing.md)
-- [Actuation and Mechanical Drive](pages/actuation.md)
-- [Control Logic and Programming](pages/control.md)
-- [Advanced Modeling and Optimization](pages/modeling.md)
+- [Sensing and Signal Architecture](Pages/sensing.md)
+- [Actuation and Mechanical Drive](Pages/actuation.md)
+- [Control Logic and Programming](Pages/control.md)
+- [Advanced Modeling and Optimization](Pages/modeling.md)
 
 ### Testing
 
-- [Prototype Construction](pages/prototype.md)
-- [Final Integration and Demonstration](pages/integration.md)
+- [Prototype Construction](Pages/prototype.md)
+- [Final Integration and Demonstration](Pages/integration.md)
 
 ---
 
-## [Results](pages/results.md)
+## [Results](Pages/results.md)
 
 ---
 
-## [Discussion](pages/discussion.md)
+## [Discussion](Pages/discussion.md)
 
 ---
 
-## [Project Management – Gantt Chart](pages/gantt.md)
+## [Project Management – Gantt Chart](Pages/gantt.md)
 
 ---
 
-## [Bibliography](pages/bibliography.md)
+## [Bibliography](Pages/bibliography.md)
 
 ---
 
-## [Appendix](pages/appendix.md)
+## [Appendix](Pages/appendix.md)
 
 ---
 
-## [Resources – Software & Hardware](pages/resources.md)
+## [Resources – Software & Hardware](Pages/resources.md)
 
 ---
 
