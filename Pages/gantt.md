@@ -4,7 +4,14 @@
 
 ---
 
-*(Embed or link your updated Gantt chart below.)*
+<iframe
+  src="https://docs.google.com/spreadsheets/d/1vQUNIplIJCaTI_P2jxYhI44QH2mPTx2C/htmlembed"
+  width="100%"
+  height="600"
+  frameborder="0"
+  style="border: 1px solid #ccc;">
+</iframe>
 
-<!-- Example: ![Gantt Chart](../media/gantt_chart.png) -->
-<!-- Or link: [View Gantt Chart](https://docs.google.com/spreadsheets/d/YOUR_SHEET_ID) -->
+---
+
+> *If the sheet does not load above, [click here to open it directly](https://docs.google.com/spreadsheets/d/1vQUNIplIJCaTI_P2jxYhI44QH2mPTx2C/edit?usp=drive_link).*
