@@ -1,6 +1,6 @@
 # Appendix
 
-[← Back to Home](../index.md)
+[← Back to Home](index.md)
 
 ---
 
@@ -52,7 +52,5 @@ cv2.destroyAllWindows()
 ---
 
 ## CAD Model
+ ![CAD Model](CAD.PNG) 
 
-*(Link to Inventor files or embed screenshots.)*
-
-<!-- Example: ![CAD Model](../media/cad_model.png) -->
