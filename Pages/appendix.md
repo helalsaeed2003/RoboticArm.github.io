@@ -52,5 +52,5 @@ cv2.destroyAllWindows()
 ---
 
 ## CAD Model
- ![CAD Model](CAD.PNG) 
+ ![CAD Model](Media/CAD.PNG) 
 
