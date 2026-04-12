@@ -1,5 +1,0 @@
-Robotic arm
-ServoBase	Moves the Base servo	3	SLIDER	X Axis	0	1.0	0.0
-ServoShoulder	Moves the Shoulder servo	3	SLIDER	Y Axis	0	1.0	0.0
-ServoElbow	Moves the Elbow servo	3	SLIDER	Z Rotation	0	1.0	0.0
-ServoWrist	Moves the Wrist servo	3	SLIDER	Z Axis	0	1.0	0.0
