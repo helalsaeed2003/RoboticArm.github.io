@@ -29,4 +29,3 @@ The Arduino R4 firmware:
 
 - **Primary link:** USB serial between PC and Arduino R4 (115200 baud)
 - **ROS2 integration (planned):** ROS2 nodes on the PC will publish joint commands and subscribe to sensor feedback, enabling integration with the Gazebo digital twin for simulation and verification.
-

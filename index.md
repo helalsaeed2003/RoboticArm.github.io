@@ -14,19 +14,19 @@
 
 ---
 
-## [Problem Statement](problem-statement.md)
+## Problem Statement
 
-Designing an affordable, compact robotic arm capable of autonomously identifying, picking, and placing objects using computer vision — with manual operator control for flexibility.
-
----
-
-## [Abstract](abstract.md)
-
-A 4-DOF pick-and-place robotic arm using a PC–Arduino R4 architecture, OpenCV-based object detection, vacuum suction gripping, and a ROS2/Gazebo digital twin.
+In many industrial and educational settings, repetitive pick-and-place tasks are performed manually, leading to inefficiency, fatigue, and inconsistency. There is a need for an affordable, compact robotic arm system capable of autonomously identifying, picking, and placing objects using computer vision — while also supporting manual operator control for flexibility.
 
 ---
 
-## [Background – Literature Review](literature-review.md)
+## Abstract
+
+This project presents the design and development of a 4-DOF pick-and-place robotic arm controlled via a PC–Arduino architecture. The system operates in two modes: an **automatic mode** using OpenCV-based color and shape detection to identify and locate target objects, and a **manual mode** using keyboard or gamepad input via pygame. The arm features MG996R servo actuators for the shoulder, elbow, and wrist joints, a JGA25-370 DC gearmotor with quadrature encoder for 360° base rotation, and a custom vacuum suction end effector with IMU-based auto-levelling. A Python application on the PC handles computer vision, inverse kinematics, and user interface, while the Arduino R4 manages real-time servo control and PID-based motor control via USB serial communication. The project also includes a ROS2-integrated Gazebo digital twin for simulation and verification.
+
+---
+
+## [Background – Literature Review](Pages/literature-review.md)
 
 ---
 
@@ -34,39 +34,39 @@ A 4-DOF pick-and-place robotic arm using a PC–Arduino R4 architecture, OpenCV-
 
 ### Engineering Analysis
 
-- [Sensing and Signal Architecture](methods/sensing.md)
-- [Actuation and Mechanical Drive](methods/actuation.md)
-- [Control Logic and Programming](methods/control.md)
-- [Advanced Modeling and Optimization](methods/modeling.md)
+- [Sensing and Signal Architecture](Pages/sensing.md)
+- [Actuation and Mechanical Drive](Pages/actuation.md)
+- [Control Logic and Programming](Pages/control.md)
+- [Advanced Modeling and Optimization](Pages/modeling.md)
 
 ### Testing
 
-- [Prototype Construction](methods/prototype.md)
-- [Final Integration and Demonstration](methods/integration.md)
+- [Prototype Construction](Pages/prototype.md)
+- [Final Integration and Demonstration](Pages/integration.md)
 
 ---
 
-## [Results](results.md)
+## [Results](Pages/results.md)
 
 ---
 
-## [Discussion](discussion.md)
+## [Discussion](Pages/discussion.md)
 
 ---
 
-## [Project Management – Gantt Chart](gantt.md)
+## [Project Management – Gantt Chart](Pages/gantt.md)
 
 ---
 
-## [Bibliography](bibliography.md)
+## [Bibliography](Pages/bibliography.md)
 
 ---
 
-## [Appendix](appendix.md)
+## [Appendix](Pages/appendix.md)
 
 ---
 
-## [Resources – Software & Hardware](resources.md)
+## [Resources – Software & Hardware](Pages/resources.md)
 
 ---
 

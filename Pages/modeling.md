@@ -11,7 +11,7 @@
 
 ### CAD Model
 
-![CAD Model](CAD.PNG)
+![CAD Model](../media/CAD.png)
 
 *(Detailed kinematic equations and DH parameter table to be added.)*
 
@@ -26,4 +26,3 @@
 
 - **Auto mode:** OpenCV detects objects by color and shape (no ML/AI training required). Object coordinates are transformed into joint angles via inverse kinematics and sent to the Arduino.
 - **Manual mode:** Keyboard or gamepad input via pygame maps to joint-level commands sent over serial.
-

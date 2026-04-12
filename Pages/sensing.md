@@ -20,4 +20,3 @@ An IMU (Inertial Measurement Unit) is mounted on the end effector to provide ori
 
 - **User interface:** pygame-based display showing camera feed with detection overlays, system status, and manual control input.
 - **Serial protocol:** PC ↔ Arduino communication via USB serial using `pyserial`. Command format: `<servo_number> <angle>` (e.g., `2 45`). A `status` command returns current joint positions.
-

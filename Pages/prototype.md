@@ -14,4 +14,3 @@
 ## Final Design
 
 *(To be updated after fabrication and assembly.)*
-

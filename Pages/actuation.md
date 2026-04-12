@@ -26,4 +26,3 @@ The end effector uses a vacuum suction cup powered by a pneumatic pump/compresso
 - **Arduino R4:** Handles real-time PWM servo control, PID loop for the DC gearmotor, IMU reading, and serial communication with the PC.
 - **L293D Motor Shield:** Used for servo header connections (pins 9 and 10 bypass the L293D chip) and DC motor driving during prototyping.
 - **Planned motor driver:** L298N or TB6612FNG for final base motor control.
-

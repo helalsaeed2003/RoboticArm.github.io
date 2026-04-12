@@ -20,4 +20,3 @@
 | Manual Control | All joints respond correctly to keyboard/gamepad input |
 | Auto Mode Cycle | Complete pick-and-place cycle without human intervention |
 | Digital Twin | Gazebo simulation mirrors real arm joint states in real time |
-

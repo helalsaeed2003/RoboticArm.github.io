@@ -1,6 +1,6 @@
 # Resources – Pre-Existing Software & Hardware
 
-[← Back to Home](index.md)
+[← Back to Home](../index.md)
 
 ---
 
@@ -22,4 +22,3 @@
 - IMU Sensor
 - Vacuum Suction Cup + Pump (TBD)
 - 3D Printed Structural Parts
-
