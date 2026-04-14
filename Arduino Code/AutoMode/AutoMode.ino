@@ -13,7 +13,7 @@ Servo shoulderServo;
 Servo elbowServo;
 Servo wristServo;
 
-const int BASE_PIN     = 9;
+const int BASE_PIN     = 7;
 const int SHOULDER_PIN = 10;
 const int ELBOW_PIN    = 11;
 const int WRIST_PIN    = 12;
