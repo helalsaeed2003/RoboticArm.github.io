@@ -15,22 +15,22 @@ float deadzone = 0.2;
 
 int prevShoulder   = -1;
 int prevElbow      = -1;
-int prevLeftSpeed  = 1;   // non-zero forces initial stop command on first frame
+int prevLeftSpeed  = 1;
 int prevRightSpeed = 1;
 
 boolean pumpOn         = false;
 boolean prevPumpButton = false;
-boolean pumpChanged    = true;  // send initial OFF on startup
+boolean pumpChanged    = true;
 
 void setup() {
   size(420, 220);
   frameRate(50);
 
   control = ControlIO.getInstance(this);
-  cont = control.getMatchedDevice("PickMasters");
+  cont = control.getMatchedDevice("CompleteControl");
 
   if (cont == null) {
-    println("Controller not found — check data/PickMasters config");
+    println("Controller not found — check data/CompleteControl config");
     System.exit(-1);
   }
 
@@ -42,37 +42,42 @@ void setup() {
 }
 
 void getUserInput() {
-  float leftX  = cont.getSlider("LeftX").getValue();
-  float leftY  = cont.getSlider("LeftY").getValue();
+  // Left stick — base DC motors
+  // Each direction is a separate named slider (0..1 when active, config handles sign flip)
+  float fwdVal   = max(0, cont.getSlider("Forward").getValue());
+  float bwdVal   = max(0, cont.getSlider("Backward").getValue());
+  float leftVal  = max(0, cont.getSlider("TurnLeft").getValue());
+  float rightVal = max(0, cont.getSlider("TurnRight").getValue());
+
+  // Right stick — arm servos
   float rightX = cont.getSlider("RightX").getValue();
   float rightY = cont.getSlider("RightY").getValue();
-  boolean btn  = cont.getButton("PumpButton").pressed();
 
-  // --- Base DC motors (differential drive) ---
-  // Most gamepads return negative Y when pushed forward; negate to get positive = forward.
-  float fwd  = (abs(leftY) > deadzone) ? -leftY : 0.0;
-  float turn = (abs(leftX) > deadzone) ?  leftX : 0.0;
+  // Button — pump toggle
+  boolean btn = cont.getButton("PumpButton").pressed();
 
-  // Mix into left/right wheel speeds, clamped to [-1, 1]
+  // --- Differential drive ---
+  float fwd  = (fwdVal  > deadzone ? fwdVal  : 0) - (bwdVal  > deadzone ? bwdVal  : 0);
+  float turn = (rightVal > deadzone ? rightVal : 0) - (leftVal > deadzone ? leftVal : 0);
+
   int leftSpeed  = (int)(constrain(fwd + turn, -1.0, 1.0) * 255);
   int rightSpeed = (int)(constrain(fwd - turn, -1.0, 1.0) * 255);
 
-  // --- Shoulder & Elbow (right stick) ---
-  // Push right-stick up to raise shoulder; push right to open elbow
+  // --- Shoulder & Elbow ---
   if (abs(rightY) > deadzone) shoulderAngle -= rightY * speed;
   if (abs(rightX) > deadzone) elbowAngle    += rightX * speed;
 
   shoulderAngle = constrain(shoulderAngle, 0, 180);
   elbowAngle    = constrain(elbowAngle,    0, 180);
 
-  // --- Pump toggle (rising edge only) ---
+  // --- Pump toggle (rising edge) ---
   if (btn && !prevPumpButton) {
     pumpOn      = !pumpOn;
     pumpChanged = true;
   }
   prevPumpButton = btn;
 
-  // --- Send only changed values ---
+  // --- Send only on change ---
   if (leftSpeed != prevLeftSpeed || rightSpeed != prevRightSpeed) {
     port.write("M " + leftSpeed + " " + rightSpeed + "\n");
     prevLeftSpeed  = leftSpeed;
@@ -101,7 +106,7 @@ void draw() {
 
   fill(255);
   textSize(16);
-  text("PickMasters  —  Manual Mode", 10, 28);
+  text("PickMasters  —  Drive Control", 10, 28);
 
   textSize(14);
   fill(200, 230, 255);
@@ -115,7 +120,7 @@ void draw() {
 
   fill(160);
   textSize(11);
-  text("Left stick: drive/turn   Right stick: shoulder/elbow   Button 1: pump toggle", 10, 185);
+  text("Left stick: drive/turn   Right stick: shoulder/elbow   Button 0: pump toggle", 10, 185);
   text("IMU auto-levels wrist — send 'cal' in serial monitor to re-zero", 10, 202);
 }
 

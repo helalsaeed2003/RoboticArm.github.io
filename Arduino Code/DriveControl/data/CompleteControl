@@ -1,0 +1,8 @@
+CompleteControl
+Forward		Drives base forward		3	SLIDER	Y Axis		0	-1.0	0.0
+Backward	Drives base backward		3	SLIDER	Y Axis		0	1.0	0.0
+TurnLeft	Turns base left			3	SLIDER	X Axis		0	-1.0	0.0
+TurnRight	Turns base right		3	SLIDER	X Axis		0	1.0	0.0
+RightX		Elbow servo			3	SLIDER	X Rotation	0	1.0	0.0
+RightY		Shoulder servo			3	SLIDER	Y Rotation	0	1.0	0.0
+PumpButton	Toggle vacuum pump		1	BUTTON	Button 0	0	1.0	0.0
