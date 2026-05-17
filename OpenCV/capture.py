@@ -1,85 +1,221 @@
+"""
+Logitech HD Camera Capture Tool
+Captures labelled training images at 1080p to a structured folder.
+
+Controls
+--------
+  S          Save current frame
+  N          New label  (creates a subfolder, resets counter)
+  [ / ]      Decrease / Increase exposure  (one step at a time)
+  A          Toggle auto-exposure on/off
+  Q          Quit
+"""
+
 import cv2
 import os
 import time
 
-SAVE_PATH = r"C:\Users\leen2\OneDrive\Desktop\PICK&PLACE"
-CAMERA_INDEX = 1
-WIDTH = 1920
-HEIGHT = 1080
+# ─── Configuration ────────────────────────────────────────────────────────────
 
-# Logitech cameras on Windows need DirectShow backend for full property control
-cap = cv2.VideoCapture(CAMERA_INDEX, cv2.CAP_DSHOW)
+CAMERA_INDEX = 1                                          # Logitech = 1
+BASE_SAVE_PATH = r"C:\Users\leen2\OneDrive\Desktop\PICK&PLACE"
+JPEG_QUALITY   = 95                                       # 0-100; 95 = high quality, reasonable size
+TARGET_W       = 1920
+TARGET_H       = 1080
+TARGET_FPS     = 30
+WARMUP_FRAMES  = 40                                       # frames to skip while auto-exposure settles
 
-cap.set(cv2.CAP_PROP_FRAME_WIDTH, WIDTH)
-cap.set(cv2.CAP_PROP_FRAME_HEIGHT, HEIGHT)
-cap.set(cv2.CAP_PROP_FPS, 30)
+# Logitech exposure range on Windows DirectShow is roughly -13 (very dark) to -1 (very bright)
+# -6 works well for a typical indoor desktop environment
+DEFAULT_EXPOSURE = -6
 
-# Let auto-exposure run for a moment before locking in
-cap.set(cv2.CAP_PROP_AUTO_EXPOSURE, 0.75)   # 0.75 = auto mode on DirectShow
-time.sleep(2)                                # warm-up so AE settles
+# ─── Camera initialisation ────────────────────────────────────────────────────
 
-# After warm-up, lock exposure manually with the settled value so it stays stable
-# Comment out these two lines if you prefer to leave auto-exposure on
-cap.set(cv2.CAP_PROP_AUTO_EXPOSURE, 0.25)   # 0.25 = manual mode
-cap.set(cv2.CAP_PROP_EXPOSURE, -6)          # typical good value for Logitech HD; tweak if too dark/bright
+def open_camera(index: int) -> cv2.VideoCapture:
+    # CAP_DSHOW is required on Windows to actually write camera properties
+    cap = cv2.VideoCapture(index, cv2.CAP_DSHOW)
+    if not cap.isOpened():
+        raise RuntimeError(
+            f"Cannot open camera at index {index}.\n"
+            "  • Make sure the Logitech camera is plugged in.\n"
+            "  • If it is the only camera, try index 0 instead of 1."
+        )
+    cap.set(cv2.CAP_PROP_FRAME_WIDTH,  TARGET_W)
+    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, TARGET_H)
+    cap.set(cv2.CAP_PROP_FPS,          TARGET_FPS)
+    return cap
 
-cap.set(cv2.CAP_PROP_BRIGHTNESS, 128)       # neutral (0-255)
-cap.set(cv2.CAP_PROP_CONTRAST, 128)         # neutral (0-255)
-cap.set(cv2.CAP_PROP_SATURATION, 128)       # neutral (0-255)
-cap.set(cv2.CAP_PROP_SHARPNESS, 128)        # neutral (0-255)
 
-if not cap.isOpened():
-    raise RuntimeError(f"Could not open camera at index {CAMERA_INDEX}. "
-                       "Check that the Logitech camera is connected and index is correct.")
+def warmup_and_lock_exposure(cap: cv2.VideoCapture) -> int:
+    """Let auto-exposure settle over WARMUP_FRAMES, then lock to manual."""
+    # Enable auto-exposure while warming up
+    cap.set(cv2.CAP_PROP_AUTO_EXPOSURE, 0.75)   # 0.75 = auto on DirectShow
 
-os.makedirs(SAVE_PATH, exist_ok=True)
+    print(f"Warming up camera ({WARMUP_FRAMES} frames) …", end="", flush=True)
+    for _ in range(WARMUP_FRAMES):
+        cap.read()
+    print(" done.")
 
-# Determine starting count so we never overwrite existing images
-existing = [f for f in os.listdir(SAVE_PATH) if f.startswith("img_") and f.endswith(".jpg")]
-count = len(existing)
+    # Lock to manual so brightness stays consistent across every training image
+    cap.set(cv2.CAP_PROP_AUTO_EXPOSURE, 0.25)   # 0.25 = manual on DirectShow
+    cap.set(cv2.CAP_PROP_EXPOSURE, DEFAULT_EXPOSURE)
 
-actual_w = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-actual_h = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-print(f"Camera opened at {actual_w}x{actual_h}")
-print(f"Saving images to: {SAVE_PATH}")
-print("Controls:  [S] save frame   [Q] quit   [A] toggle auto-exposure")
+    # Neutral image quality settings (scale depends on camera; 128 is mid-point for Logitech)
+    cap.set(cv2.CAP_PROP_BRIGHTNESS,  128)
+    cap.set(cv2.CAP_PROP_CONTRAST,    128)
+    cap.set(cv2.CAP_PROP_SATURATION,  140)       # slightly richer colour helps detection models
+    cap.set(cv2.CAP_PROP_SHARPNESS,   150)       # a little extra sharpness aids edge detection
 
-auto_exp = False   # we started in manual mode after warm-up
+    return DEFAULT_EXPOSURE
 
-while True:
-    ret, frame = cap.read()
-    if not ret:
-        print("Failed to grab frame — check camera connection.")
-        break
 
-    # Overlay info
-    label = f"{actual_w}x{actual_h}  saved: {count}"
-    cv2.putText(frame, label, (10, 30), cv2.FONT_HERSHEY_SIMPLEX,
-                0.8, (0, 255, 0), 2, cv2.LINE_AA)
+# ─── Helpers ─────────────────────────────────────────────────────────────────
 
-    cv2.imshow("Logitech Capture — S=save  Q=quit  A=auto-exp", frame)
-    key = cv2.waitKey(1) & 0xFF
+def make_save_dir(base: str, label: str) -> str:
+    path = os.path.join(base, label)
+    os.makedirs(path, exist_ok=True)
+    return path
 
-    if key == ord('s'):
-        filename = os.path.join(SAVE_PATH, f"img_{count:04d}.jpg")
-        # Quality 95 keeps detail without inflating file size
-        cv2.imwrite(filename, frame, [cv2.IMWRITE_JPEG_QUALITY, 95])
-        print(f"Saved {filename}")
-        count += 1
 
-    elif key == ord('a'):
-        auto_exp = not auto_exp
-        if auto_exp:
-            cap.set(cv2.CAP_PROP_AUTO_EXPOSURE, 0.75)
-            print("Auto-exposure ON")
-        else:
-            cap.set(cv2.CAP_PROP_AUTO_EXPOSURE, 0.25)
-            cap.set(cv2.CAP_PROP_EXPOSURE, -6)
-            print("Auto-exposure OFF (manual -6)")
+def next_index(folder: str) -> int:
+    """Find the highest existing image index so we never overwrite anything."""
+    existing = [
+        f for f in os.listdir(folder)
+        if f.startswith("img_") and f.endswith(".jpg")
+    ]
+    if not existing:
+        return 0
+    indices = []
+    for f in existing:
+        try:
+            indices.append(int(f[4:8]))
+        except ValueError:
+            pass
+    return max(indices) + 1 if indices else 0
 
-    elif key == ord('q'):
-        break
 
-cap.release()
-cv2.destroyAllWindows()
-print(f"Done. {count} images saved to {SAVE_PATH}")
+def brightness_warning(frame) -> str:
+    """Return a warning string if the frame is over- or under-exposed."""
+    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    mean = gray.mean()
+    if mean < 40:
+        return "UNDEREXPOSED  press ] to increase exposure"
+    if mean > 215:
+        return "OVEREXPOSED   press [ to decrease exposure"
+    return ""
+
+
+def draw_hud(frame, label: str, count: int, exposure: int, auto: bool, warning: str):
+    h, w = frame.shape[:2]
+
+    # Semi-transparent dark bar at the top
+    overlay = frame.copy()
+    cv2.rectangle(overlay, (0, 0), (w, 52), (0, 0, 0), -1)
+    cv2.addWeighted(overlay, 0.5, frame, 0.5, 0, frame)
+
+    exp_str  = "AUTO" if auto else str(exposure)
+    info     = f"Label: {label}   Saved: {count}   Exposure: {exp_str}   {w}x{h}"
+    controls = "S=save  N=new label  [/]=exposure  A=auto-exp  Q=quit"
+
+    cv2.putText(frame, info,     (10, 20), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0),  1, cv2.LINE_AA)
+    cv2.putText(frame, controls, (10, 42), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (180, 180, 180), 1, cv2.LINE_AA)
+
+    if warning:
+        cv2.putText(frame, warning, (10, h - 14), cv2.FONT_HERSHEY_SIMPLEX,
+                    0.65, (0, 80, 255), 2, cv2.LINE_AA)
+
+
+# ─── Main ─────────────────────────────────────────────────────────────────────
+
+def main():
+    # Ask for initial label
+    label = input("Enter label / class name for this session (e.g. cube, empty): ").strip()
+    if not label:
+        label = "default"
+
+    cap      = open_camera(CAMERA_INDEX)
+    exposure = warmup_and_lock_exposure(cap)
+    auto_exp = False
+
+    actual_w = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+    actual_h = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+    print(f"Resolution : {actual_w} x {actual_h}")
+    print(f"Save path  : {BASE_SAVE_PATH}")
+    print(f"Label      : {label}")
+    print("─" * 50)
+
+    save_dir = make_save_dir(BASE_SAVE_PATH, label)
+    count    = next_index(save_dir)
+
+    while True:
+        ret, frame = cap.read()
+        if not ret:
+            print("Frame grab failed — check the camera connection.")
+            break
+
+        warning = brightness_warning(frame)
+        draw_hud(frame, label, count, exposure, auto_exp, warning)
+
+        cv2.imshow("Logitech Capture", frame)
+        key = cv2.waitKey(1) & 0xFF
+
+        # ── Save ──────────────────────────────────────────────────────────────
+        if key == ord('s'):
+            filename = os.path.join(save_dir, f"img_{count:04d}.jpg")
+            # Save a clean frame (re-read so the HUD overlay is NOT baked into the image)
+            ret2, clean = cap.read()
+            if ret2:
+                cv2.imwrite(filename, clean, [cv2.IMWRITE_JPEG_QUALITY, JPEG_QUALITY])
+                print(f"  Saved: {filename}")
+                count += 1
+            else:
+                cv2.imwrite(filename, frame, [cv2.IMWRITE_JPEG_QUALITY, JPEG_QUALITY])
+                print(f"  Saved (display frame): {filename}")
+                count += 1
+
+        # ── New label ─────────────────────────────────────────────────────────
+        elif key == ord('n'):
+            cv2.destroyAllWindows()
+            new_label = input("New label: ").strip()
+            if new_label:
+                label    = new_label
+                save_dir = make_save_dir(BASE_SAVE_PATH, label)
+                count    = next_index(save_dir)
+                print(f"Switched to label '{label}' — save dir: {save_dir}")
+
+        # ── Decrease exposure ─────────────────────────────────────────────────
+        elif key == ord('['):
+            if not auto_exp:
+                exposure = max(exposure - 1, -13)
+                cap.set(cv2.CAP_PROP_EXPOSURE, exposure)
+                print(f"  Exposure → {exposure}")
+
+        # ── Increase exposure ─────────────────────────────────────────────────
+        elif key == ord(']'):
+            if not auto_exp:
+                exposure = min(exposure + 1, -1)
+                cap.set(cv2.CAP_PROP_EXPOSURE, exposure)
+                print(f"  Exposure → {exposure}")
+
+        # ── Toggle auto-exposure ───────────────────────────────────────────────
+        elif key == ord('a'):
+            auto_exp = not auto_exp
+            if auto_exp:
+                cap.set(cv2.CAP_PROP_AUTO_EXPOSURE, 0.75)
+                print("  Auto-exposure ON")
+            else:
+                cap.set(cv2.CAP_PROP_AUTO_EXPOSURE, 0.25)
+                cap.set(cv2.CAP_PROP_EXPOSURE, exposure)
+                print(f"  Auto-exposure OFF  (locked at {exposure})")
+
+        # ── Quit ──────────────────────────────────────────────────────────────
+        elif key == ord('q'):
+            break
+
+    cap.release()
+    cv2.destroyAllWindows()
+    print(f"\nSession complete. {count} images saved under '{label}' in {BASE_SAVE_PATH}")
+
+
+if __name__ == "__main__":
+    main()
