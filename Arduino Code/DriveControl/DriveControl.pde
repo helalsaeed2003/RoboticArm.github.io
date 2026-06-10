@@ -77,8 +77,25 @@ void setup() {
   }
   controllerReady = true;
 
-  println(Serial.list());
-  port = new Serial(this, Serial.list()[1], 9600);
+  // Pick the Arduino's serial port automatically: COM1 is almost always the
+  // PC's built-in port, so prefer the last port that isn't COM1.  If the
+  // Arduino is unplugged (or its driver is missing) no usable port exists.
+  String[] ports = Serial.list();
+  printArray(ports);
+
+  String portName = null;
+  for (int i = ports.length - 1; i >= 0; i--) {
+    if (!ports[i].equals("COM1")) { portName = ports[i]; break; }
+  }
+  if (portName == null && ports.length > 0) portName = ports[0];
+
+  if (portName == null) {
+    println("No serial port found — is the Arduino plugged in?");
+    System.exit(-1);
+  }
+
+  println("Connecting to " + portName);
+  port = new Serial(this, portName, 9600);
   port.bufferUntil('\n');
 
   delay(2000);   // let the Arduino reboot after the port opens
