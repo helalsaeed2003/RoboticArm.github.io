@@ -1,6 +1,9 @@
 PickMasters
-LeftX	Left stick horizontal — base turning	3	SLIDER	X Axis	0	1.0	0.0
-LeftY	Left stick vertical — base fwd/back	3	SLIDER	Y Axis	0	1.0	0.0
-RightX	Right stick horizontal — elbow	3	SLIDER	Z Axis	0	1.0	0.0
-RightY	Right stick vertical — shoulder	3	SLIDER	Z Rotation	0	1.0	0.0
+LeftX	Left stick horizontal — base pivot left/right	3	SLIDER	X Axis	0	1.0	0.0
+LeftY	Left stick vertical — base forward/back	3	SLIDER	Y Axis	0	1.0	0.0
+RightX	Right stick horizontal — hand servo	3	SLIDER	Z Axis	0	1.0	0.0
+RightY	Right stick vertical — wrist servo (manual mode)	3	SLIDER	Z Rotation	0	1.0	0.0
+Dpad	D-pad — shoulder (up/down) and elbow (left/right)	2	HAT	Hat Switch	0	1.0	0.0
 PumpButton	Toggle vacuum pump	1	BUTTON	Button 1	0	1.0	0.0
+CalButton	Re-zero IMU pitch offset	1	BUTTON	Button 3	0	1.0	0.0
+WristModeButton	Toggle wrist AUTO (IMU) / MANUAL	1	BUTTON	Button 2	0	1.0	0.0

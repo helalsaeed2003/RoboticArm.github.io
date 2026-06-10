@@ -1,5 +1,25 @@
+// PickMasters — DriveControl (manual controller, paired with ArmController.ino)
+//
+// Bluetooth XINPUT gamepad via GameControlPlus (config: data/PickMasters).
+//
+// Mapping:
+//   Left stick (digital)  — base drive: fully forward/back = both wheels,
+//                           fully left/right = pivot in place. Constant speed.
+//   D-pad up/down         — shoulder servo  (±step per frame while held)
+//   D-pad left/right      — elbow servo     (±step per frame while held)
+//   Right stick Y         — wrist servo     (rate control, MANUAL mode only)
+//   Right stick X         — hand servo      (rate control)
+//   PumpButton            — pump on/off toggle        (rising edge)
+//   CalButton             — IMU re-zero ("cal")       (rising edge)
+//   WristModeButton       — wrist AUTO/MANUAL toggle  (rising edge)
+//
+// Serial: ONE combined message per frame, sent only when something changed
+// and at most every SEND_INTERVAL ms, to avoid flooding the Arduino:
+//   S<shoulder>,<elbow>,<wrist>,<hand>,M<left>,<right>,P<0|1>,W<0|1>\n
+
 import org.gamecontrolplus.*;
 import org.gamecontrolplus.gui.*;
+import g4p_controls.*;
 import processing.serial.*;
 import net.java.games.input.*;
 
@@ -7,23 +27,38 @@ ControlDevice cont;
 ControlIO control;
 Serial port;
 
+// --- Servo state ---
 float shoulderAngle = 90;
 float elbowAngle    = 90;
+float wristAngle    = 90;
+float handAngle     = 90;
 
-float speed    = 4.0;
-float deadzone = 0.2;
+float dpadStep  = 3.0;   // deg per frame while D-pad held (shoulder/elbow)
+float stickRate = 3.0;   // deg per frame at full deflection (wrist/hand)
+float deadzone  = 0.2;   // right stick deadzone
 
-int prevShoulder   = -1;
-int prevElbow      = -1;
-int prevLeftSpeed  = 1;   // non-zero forces initial stop command on first frame
-int prevRightSpeed = 1;
+// --- Drive state (digital: stick must be fully pushed) ---
+float driveThreshold = 0.9;
+int motorLeft  = 0;      // -1 / 0 / +1, Arduino applies its constant speed
+int motorRight = 0;
 
-boolean pumpOn         = false;
-boolean prevPumpButton = false;
-boolean pumpChanged    = true;  // send initial OFF on startup
+boolean pumpOn    = false;
+boolean wristAuto = true;   // true = IMU leveling, false = right stick Y
+
+// --- Button edge detection ---
+boolean prevPumpBtn = false;
+boolean prevCalBtn  = false;
+boolean prevModeBtn = false;
+
+// --- Serial throttle: send only on change, at most every SEND_INTERVAL ms ---
+String lastMsg  = "";
+long   lastSend = 0;
+final int SEND_INTERVAL = 50;
+
+String lastResponse = "";
 
 void setup() {
-  size(420, 220);
+  size(440, 290);
   frameRate(50);
 
   control = ControlIO.getInstance(this);
@@ -38,7 +73,7 @@ void setup() {
   port = new Serial(this, Serial.list()[1], 9600);
   port.bufferUntil('\n');
 
-  delay(2000);
+  delay(2000);   // let the Arduino reboot after the port opens
 }
 
 void getUserInput() {
@@ -46,57 +81,75 @@ void getUserInput() {
   float leftY  = cont.getSlider("LeftY").getValue();
   float rightX = cont.getSlider("RightX").getValue();
   float rightY = cont.getSlider("RightY").getValue();
-  boolean btn  = cont.getButton("PumpButton").pressed();
 
-  // --- Base DC motors (differential drive) ---
-  // Most gamepads return negative Y when pushed forward; negate to get positive = forward.
-  float fwd  = (abs(leftY) > deadzone) ? -leftY : 0.0;
-  float turn = (abs(leftX) > deadzone) ?  leftX : 0.0;
+  // --- Base DC motors: digital only, single constant speed ---
+  // Stick must be fully pushed (gamepads read negative Y when pushed forward).
+  // Forward/back wins; left/right pivots in place (never mixed with fwd/back).
+  if (leftY <= -driveThreshold)      { motorLeft =  1; motorRight =  1; }  // forward
+  else if (leftY >= driveThreshold)  { motorLeft = -1; motorRight = -1; }  // backward
+  else if (leftX >= driveThreshold)  { motorLeft =  1; motorRight = -1; }  // pivot right
+  else if (leftX <= -driveThreshold) { motorLeft = -1; motorRight =  1; }  // pivot left
+  else                               { motorLeft =  0; motorRight =  0; }
 
-  // Mix into left/right wheel speeds, clamped to [-1, 1]
-  int leftSpeed  = (int)(constrain(fwd + turn, -1.0, 1.0) * 255);
-  int rightSpeed = (int)(constrain(fwd - turn, -1.0, 1.0) * 255);
+  // --- Shoulder & elbow on the D-pad (fixed step per frame while held) ---
+  // GameControlPlus hat positions: 0 = released, then clockwise from
+  // 1 = up-left: 2 = up, 3 = up-right, 4 = right, 5 = down-right,
+  // 6 = down, 7 = down-left, 8 = left.
+  int pos = cont.getHat("Dpad").getPos();
+  boolean dUp    = (pos == 1 || pos == 2 || pos == 3);
+  boolean dDown  = (pos == 5 || pos == 6 || pos == 7);
+  boolean dRight = (pos == 3 || pos == 4 || pos == 5);
+  boolean dLeft  = (pos == 7 || pos == 8 || pos == 1);
 
-  // --- Shoulder & Elbow (right stick) ---
-  // Push right-stick up to raise shoulder; push right to open elbow
-  if (abs(rightY) > deadzone) shoulderAngle -= rightY * speed;
-  if (abs(rightX) > deadzone) elbowAngle    += rightX * speed;
+  if (dUp)    shoulderAngle += dpadStep;
+  if (dDown)  shoulderAngle -= dpadStep;
+  if (dRight) elbowAngle    += dpadStep;
+  if (dLeft)  elbowAngle    -= dpadStep;
+
+  // --- Wrist (right stick Y, MANUAL mode only) & hand (right stick X) ---
+  if (!wristAuto && abs(rightY) > deadzone) wristAngle -= rightY * stickRate;
+  if (abs(rightX) > deadzone)               handAngle  += rightX * stickRate;
 
   shoulderAngle = constrain(shoulderAngle, 0, 180);
   elbowAngle    = constrain(elbowAngle,    0, 180);
+  wristAngle    = constrain(wristAngle,    0, 180);
+  handAngle     = constrain(handAngle,     0, 180);
 
-  // --- Pump toggle (rising edge only) ---
-  if (btn && !prevPumpButton) {
-    pumpOn      = !pumpOn;
-    pumpChanged = true;
-  }
-  prevPumpButton = btn;
+  // --- Buttons (rising edge only) ---
+  boolean pumpBtn = cont.getButton("PumpButton").pressed();
+  boolean calBtn  = cont.getButton("CalButton").pressed();
+  boolean modeBtn = cont.getButton("WristModeButton").pressed();
 
-  // --- Send only changed values ---
-  if (leftSpeed != prevLeftSpeed || rightSpeed != prevRightSpeed) {
-    port.write("M " + leftSpeed + " " + rightSpeed + "\n");
-    prevLeftSpeed  = leftSpeed;
-    prevRightSpeed = rightSpeed;
-  }
+  if (pumpBtn && !prevPumpBtn) pumpOn = !pumpOn;
+  if (modeBtn && !prevModeBtn) wristAuto = !wristAuto;
+  if (calBtn && !prevCalBtn)   port.write("cal\n");
 
-  if ((int)shoulderAngle != prevShoulder) {
-    port.write("2 " + (int)shoulderAngle + "\n");
-    prevShoulder = (int)shoulderAngle;
-  }
+  prevPumpBtn = pumpBtn;
+  prevCalBtn  = calBtn;
+  prevModeBtn = modeBtn;
+}
 
-  if ((int)elbowAngle != prevElbow) {
-    port.write("3 " + (int)elbowAngle + "\n");
-    prevElbow = (int)elbowAngle;
-  }
+void sendState() {
+  // ONE combined message per frame — only when it changed, throttled to
+  // SEND_INTERVAL, written with port.write() (no println), to keep the
+  // Arduino's serial buffer from overflowing and dropping the connection.
+  String msg = "S" + (int)shoulderAngle + "," + (int)elbowAngle + ","
+                   + (int)wristAngle + "," + (int)handAngle
+             + ",M" + motorLeft + "," + motorRight
+             + ",P" + (pumpOn ? 1 : 0)
+             + ",W" + (wristAuto ? 1 : 0) + "\n";
 
-  if (pumpChanged) {
-    port.write("P " + (pumpOn ? "1" : "0") + "\n");
-    pumpChanged = false;
+  if (!msg.equals(lastMsg) && millis() - lastSend >= SEND_INTERVAL) {
+    port.write(msg);
+    lastMsg  = msg;
+    lastSend = millis();
   }
 }
 
 void draw() {
   getUserInput();
+  sendState();
+
   background(40, 60, 100);
 
   fill(255);
@@ -105,21 +158,36 @@ void draw() {
 
   textSize(14);
   fill(200, 230, 255);
-  text("Base:      DC motors  (left stick)", 10, 60);
-  text("Shoulder:  " + (int)shoulderAngle + " deg", 10, 82);
-  text("Elbow:     " + (int)elbowAngle + " deg", 10, 104);
-  text("Wrist:     AUTO (IMU)", 10, 126);
+  text("Shoulder:  " + (int)shoulderAngle + " deg", 10, 60);
+  text("Elbow:     " + (int)elbowAngle + " deg", 10, 82);
+  text("Wrist:     " + (int)wristAngle + " deg", 10, 104);
+  text("Hand:      " + (int)handAngle + " deg", 10, 126);
+  text("Motors:    L " + motorState(motorLeft) + "   R " + motorState(motorRight), 10, 148);
 
   fill(pumpOn ? color(80, 255, 80) : color(255, 80, 80));
-  text("Pump:      " + (pumpOn ? "ON" : "OFF"), 10, 148);
+  text("Pump:      " + (pumpOn ? "ON" : "OFF"), 10, 170);
+
+  fill(wristAuto ? color(120, 200, 255) : color(255, 200, 80));
+  text("Wrist mode: " + (wristAuto ? "AUTO (IMU)" : "MANUAL (right stick Y)"), 10, 192);
 
   fill(160);
   textSize(11);
-  text("Left stick: drive/turn   Right stick: shoulder/elbow   Button 1: pump toggle", 10, 185);
-  text("IMU auto-levels wrist — send 'cal' in serial monitor to re-zero", 10, 202);
+  text("Left stick: drive (full push)   D-pad: shoulder/elbow   Right stick: wrist/hand", 10, 230);
+  text("PumpButton: pump   CalButton: IMU re-zero   WristModeButton: AUTO/MANUAL", 10, 247);
+  fill(220);
+  text("Arduino: " + lastResponse, 10, 275);
+}
+
+String motorState(int dir) {
+  if (dir > 0) return "FWD";
+  if (dir < 0) return "REV";
+  return "STOP";
 }
 
 void serialEvent(Serial p) {
   String msg = p.readStringUntil('\n');
-  if (msg != null) println(msg.trim());
+  if (msg != null) {
+    lastResponse = msg.trim();
+    println(lastResponse);
+  }
 }
