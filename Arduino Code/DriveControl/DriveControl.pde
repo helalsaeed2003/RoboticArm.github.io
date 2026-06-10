@@ -26,6 +26,7 @@ import net.java.games.input.*;
 ControlDevice cont;
 ControlIO control;
 Serial port;
+boolean controllerReady = false;
 
 // --- Servo state ---
 float shoulderAngle = 90;
@@ -61,13 +62,20 @@ void setup() {
   size(440, 290);
   frameRate(50);
 
-  control = ControlIO.getInstance(this);
-  cont = control.getMatchedDevice("PickMasters");
+  // GCP on Windows enumerates every input device (including virtual ones like
+  // FakerInput).  Wrapping init in try/catch lets us recover gracefully.
+  try {
+    control = ControlIO.getInstance(this);
+    cont = control.getMatchedDevice("PickMasters");
+  } catch (Exception e) {
+    println("Warning during controller init: " + e.getMessage());
+  }
 
   if (cont == null) {
     println("Controller not found — check data/PickMasters config");
     System.exit(-1);
   }
+  controllerReady = true;
 
   println(Serial.list());
   port = new Serial(this, Serial.list()[1], 9600);
@@ -77,6 +85,7 @@ void setup() {
 }
 
 void getUserInput() {
+  if (!controllerReady || cont == null) return;
   float leftX  = cont.getSlider("LeftX").getValue();
   float leftY  = cont.getSlider("LeftY").getValue();
   float rightX = cont.getSlider("RightX").getValue();
@@ -147,7 +156,14 @@ void sendState() {
 }
 
 void draw() {
-  getUserInput();
+  // ConcurrentModificationException is a known GCP library bug (device list
+  // iterated on two threads simultaneously).  Catching it here lets the sketch
+  // keep running instead of crashing — the missed frame is harmless.
+  try {
+    getUserInput();
+  } catch (java.util.ConcurrentModificationException e) {
+    // skip this frame's input, will re-read next frame
+  }
   sendState();
 
   background(40, 60, 100);
