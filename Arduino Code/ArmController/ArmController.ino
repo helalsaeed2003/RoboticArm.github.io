@@ -1,43 +1,46 @@
 // PickMasters — ArmController firmware
 // 4-DOF robotic arm, manual control over USB serial (paired with DriveControl.pde)
 //
-// Hardware: Arduino Uno + Adafruit L293D Motor Shield v1 (AFMotor library)
+// Hardware: Arduino Uno + standalone L298N dual H-bridge motor driver
 //
 // Pin usage:
-//   A0  — Shoulder servo
-//   A1  — Elbow servo
-//   A2  — Wrist servo
-//   A3  — Hand servo
+//   3   — Shoulder servo
+//   10  — Elbow servo
+//   11  — Wrist servo
+//   12  — Hand servo
 //   A4  — IMU SDA (I2C, reserved by Wire)
 //   A5  — IMU SCL (I2C, reserved by Wire)
-//   2   — Pump relay (ACTIVE LOW: LOW = on, HIGH = off, starts off)
-//   9   — IMU calibration button (INPUT_PULLUP)
-//   Motor shield occupies pins 3,4,5,6,7,8,11,12 internally — do not reuse.
-//   DC motors: M1 = left wheel, M2 = right wheel.
+//   9   — Pump relay (ACTIVE LOW: LOW = on, HIGH = off, starts off)
+//   13  — IMU calibration button (INPUT_PULLUP)
+//   L298N driver: ENA=5, IN1=2, IN2=4 (left wheel);
+//                 ENB=6, IN3=7, IN4=8 (right wheel).
 //
 // Serial protocol (9600 baud, newline-terminated, ONE combined message per frame):
 //   S<shoulder>,<elbow>,<wrist>,<hand>,M<left>,<right>,P<0|1>,W<0|1>
 //     servo angles 0..180, motor directions -1/0/1, P1 = pump on,
 //     W1 = wrist AUTO (IMU leveling), W0 = wrist MANUAL
-//   cal     — re-zero IMU pitch offset (also hardware button on pin 9)
+//   cal     — re-zero IMU pitch offset (also hardware button on pin 13)
 //   status  — print all current angles and states (single compact line)
 
 #include <Wire.h>
 #include <Servo.h>
-#include <AFMotor.h>   // Adafruit Motor Shield v1 library
 
 // ── Pin definitions ──────────────────────────────────────────────────────────
-#define SHOULDER_PIN  A0
-#define ELBOW_PIN     A1
-#define WRIST_PIN     A2
-#define HAND_PIN      A3
-#define PUMP_PIN      2     // relay is active LOW
-#define CAL_BUTTON    9     // INPUT_PULLUP — press to re-zero IMU
+#define SHOULDER_PIN  3
+#define ELBOW_PIN     10
+#define WRIST_PIN     11
+#define HAND_PIN      12
+#define PUMP_PIN      9     // relay is active LOW
+#define CAL_BUTTON    13    // INPUT_PULLUP — press to re-zero IMU
 #define MPU_ADDR      0x68
 
-// ── DC motors via L293D motor shield ─────────────────────────────────────────
-AF_DCMotor motorLeft(1);
-AF_DCMotor motorRight(2);
+// ── DC motors via L298N dual H-bridge ────────────────────────────────────────
+#define ENA  5     // PWM speed, left wheel
+#define IN1  2     // direction A, left wheel
+#define IN2  4     // direction B, left wheel
+#define ENB  6     // PWM speed, right wheel
+#define IN3  7     // direction A, right wheel
+#define IN4  8     // direction B, right wheel
 const int DRIVE_SPEED = 200;   // single constant speed when a motor is active
 
 // ── Servos ───────────────────────────────────────────────────────────────────
@@ -77,6 +80,14 @@ void setup() {
 
   pinMode(CAL_BUTTON, INPUT_PULLUP);
 
+  // L298N control pins
+  pinMode(ENA, OUTPUT);
+  pinMode(IN1, OUTPUT);
+  pinMode(IN2, OUTPUT);
+  pinMode(ENB, OUTPUT);
+  pinMode(IN3, OUTPUT);
+  pinMode(IN4, OUTPUT);
+
   // Servos — centre on startup
   shoulderServo.attach(SHOULDER_PIN);
   elbowServo.attach(ELBOW_PIN);
@@ -88,10 +99,8 @@ void setup() {
   handServo.write(handAngle);
 
   // Motors idle
-  motorLeft.setSpeed(0);
-  motorRight.setSpeed(0);
-  motorLeft.run(RELEASE);
-  motorRight.run(RELEASE);
+  setMotorLeft(0);
+  setMotorRight(0);
 
   // Wake up MPU6050
   Wire.begin();
@@ -156,8 +165,8 @@ void parseCommand(char *cmd) {
         wristServo.write(wristAngle);
       }
 
-      setMotor(motorLeft,  l);
-      setMotor(motorRight, r);
+      setMotorLeft(l);
+      setMotorRight(r);
       leftDir  = l;
       rightDir = r;
 
@@ -174,17 +183,38 @@ void parseCommand(char *cmd) {
   }
 }
 
-// ── DC motor control ──────────────────────────────────────────────────────────
-void setMotor(AF_DCMotor &m, int dir) {
+// ── DC motor control (L298N) ──────────────────────────────────────────────────
+// Left wheel: ENA + IN1/IN2.  dir > 0 = forward, dir < 0 = backward, 0 = stop.
+void setMotorLeft(int dir) {
   if (dir > 0) {
-    m.setSpeed(DRIVE_SPEED);
-    m.run(FORWARD);
+    digitalWrite(IN1, HIGH);
+    digitalWrite(IN2, LOW);
+    analogWrite(ENA, DRIVE_SPEED);
   } else if (dir < 0) {
-    m.setSpeed(DRIVE_SPEED);
-    m.run(BACKWARD);
+    digitalWrite(IN1, LOW);
+    digitalWrite(IN2, HIGH);
+    analogWrite(ENA, DRIVE_SPEED);
   } else {
-    m.setSpeed(0);
-    m.run(RELEASE);
+    digitalWrite(IN1, LOW);
+    digitalWrite(IN2, LOW);
+    analogWrite(ENA, 0);
+  }
+}
+
+// Right wheel: ENB + IN3/IN4.  dir > 0 = forward, dir < 0 = backward, 0 = stop.
+void setMotorRight(int dir) {
+  if (dir > 0) {
+    digitalWrite(IN3, HIGH);
+    digitalWrite(IN4, LOW);
+    analogWrite(ENB, DRIVE_SPEED);
+  } else if (dir < 0) {
+    digitalWrite(IN3, LOW);
+    digitalWrite(IN4, HIGH);
+    analogWrite(ENB, DRIVE_SPEED);
+  } else {
+    digitalWrite(IN3, LOW);
+    digitalWrite(IN4, LOW);
+    analogWrite(ENB, 0);
   }
 }
 
