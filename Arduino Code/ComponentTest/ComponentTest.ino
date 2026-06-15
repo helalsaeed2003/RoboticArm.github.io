@@ -5,7 +5,7 @@
 // Open the Serial Monitor at 9600 baud, set line ending to "Newline" (or just
 // send single characters), and press a key to run each test:
 //
-//   1  — Shoulder servo sweep  (pin 9)
+//   1  — Shoulder servo sweep  (pin 13)
 //   2  — Elbow servo sweep     (pin 10)
 //   3  — Wrist servo sweep     (pin 11)
 //   4  — Hand servo sweep      (pin 12)
@@ -15,14 +15,14 @@
 //   r  — Right motor: FWD -> REV -> STOP (ENB=6, IN3=7, IN4=8 -> OUT3/OUT4)
 //   m  — Both motors: FWD -> REV -> PIVOT L -> PIVOT R -> STOP
 //   i  — Stream IMU pitch for 5 s         (MPU6050 on A4/A5)
-//   b  — Watch calibration button for 5 s (pin 13, INPUT_PULLUP)
+//   b  — Watch calibration button for 5 s (pin A0, INPUT_PULLUP)
 //   h  — Print this menu again
 
 #include <Wire.h>
 #include <Servo.h>
 
 // ── Servo pins ───────────────────────────────────────────────────────────────
-#define SHOULDER_PIN  9
+#define SHOULDER_PIN  13
 #define ELBOW_PIN     10
 #define WRIST_PIN     11
 #define HAND_PIN      12
@@ -31,7 +31,7 @@
 #define PUMP_PIN      3
 
 // ── IMU calibration button ───────────────────────────────────────────────────
-#define CAL_BUTTON    13
+#define CAL_BUTTON    A0
 
 // ── L298N motor driver ───────────────────────────────────────────────────────
 #define ENA  5     // PWM speed, left wheel
@@ -220,7 +220,7 @@ void streamIMU() {
 
 // ── Calibration button test ──────────────────────────────────────────────────
 void watchButton() {
-  Serial.println(F("Watching cal button (pin 13) for 5 s — press it..."));
+  Serial.println(F("Watching cal button (pin A0) for 5 s — press it..."));
   bool prev = HIGH;
   unsigned long t0 = millis();
   while (millis() - t0 < 5000) {
@@ -235,7 +235,7 @@ void watchButton() {
 // ── Menu ──────────────────────────────────────────────────────────────────────
 void printMenu() {
   Serial.println(F("------ component test menu ------"));
-  Serial.println(F(" 1  Shoulder servo (pin 9)"));
+  Serial.println(F(" 1  Shoulder servo (pin 13)"));
   Serial.println(F(" 2  Elbow servo    (pin 10)"));
   Serial.println(F(" 3  Wrist servo    (pin 11)"));
   Serial.println(F(" 4  Hand servo     (pin 12)"));
@@ -245,7 +245,7 @@ void printMenu() {
   Serial.println(F(" r  Right motor (OUT3/OUT4)"));
   Serial.println(F(" m  Both motors sequence"));
   Serial.println(F(" i  IMU pitch stream (5 s)"));
-  Serial.println(F(" b  Cal button watch (5 s)"));
+  Serial.println(F(" b  Cal button watch (pin A0, 5 s)"));
   Serial.println(F(" h  Show this menu"));
   Serial.println(F("--------------------------------"));
 }

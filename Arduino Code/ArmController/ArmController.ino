@@ -4,14 +4,14 @@
 // Hardware: Arduino Uno + standalone L298N dual H-bridge motor driver
 //
 // Pin usage:
-//   9   — Shoulder servo
+//   13  — Shoulder servo
 //   10  — Elbow servo
 //   11  — Wrist servo
 //   12  — Hand servo
 //   A4  — IMU SDA (I2C, reserved by Wire)
 //   A5  — IMU SCL (I2C, reserved by Wire)
 //   3   — Pump relay (ACTIVE LOW: LOW = on, HIGH = off, starts off)
-//   13  — IMU calibration button (INPUT_PULLUP)
+//   A0  — IMU calibration button (INPUT_PULLUP)
 //   L298N driver: ENA=5, IN1=2, IN2=4 (left wheel);
 //                 ENB=6, IN3=7, IN4=8 (right wheel).
 //
@@ -19,19 +19,19 @@
 //   S<shoulder>,<elbow>,<wrist>,<hand>,M<left>,<right>,P<0|1>,W<0|1>
 //     servo angles 0..180, motor directions -1/0/1, P1 = pump on,
 //     W1 = wrist AUTO (IMU leveling), W0 = wrist MANUAL
-//   cal     — re-zero IMU pitch offset (also hardware button on pin 13)
+//   cal     — re-zero IMU pitch offset (also hardware button on pin A0)
 //   status  — print all current angles and states (single compact line)
 
 #include <Wire.h>
 #include <Servo.h>
 
 // ── Pin definitions ──────────────────────────────────────────────────────────
-#define SHOULDER_PIN  9
+#define SHOULDER_PIN  13
 #define ELBOW_PIN     10
 #define WRIST_PIN     11
 #define HAND_PIN      12
 #define PUMP_PIN      3     // relay is active LOW
-#define CAL_BUTTON    13    // INPUT_PULLUP — press to re-zero IMU
+#define CAL_BUTTON    A0    // INPUT_PULLUP — press to re-zero IMU
 #define MPU_ADDR      0x68
 
 // ── DC motors via L298N dual H-bridge ────────────────────────────────────────
