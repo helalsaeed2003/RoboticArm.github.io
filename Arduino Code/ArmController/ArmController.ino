@@ -4,13 +4,13 @@
 // Hardware: Arduino Uno + standalone L298N dual H-bridge motor driver
 //
 // Pin usage:
-//   3   — Shoulder servo
+//   9   — Shoulder servo
 //   10  — Elbow servo
 //   11  — Wrist servo
 //   12  — Hand servo
 //   A4  — IMU SDA (I2C, reserved by Wire)
 //   A5  — IMU SCL (I2C, reserved by Wire)
-//   9   — Pump relay (ACTIVE LOW: LOW = on, HIGH = off, starts off)
+//   3   — Pump relay (ACTIVE LOW: LOW = on, HIGH = off, starts off)
 //   13  — IMU calibration button (INPUT_PULLUP)
 //   L298N driver: ENA=5, IN1=2, IN2=4 (left wheel);
 //                 ENB=6, IN3=7, IN4=8 (right wheel).
@@ -26,11 +26,11 @@
 #include <Servo.h>
 
 // ── Pin definitions ──────────────────────────────────────────────────────────
-#define SHOULDER_PIN  3
+#define SHOULDER_PIN  9
 #define ELBOW_PIN     10
 #define WRIST_PIN     11
 #define HAND_PIN      12
-#define PUMP_PIN      9     // relay is active LOW
+#define PUMP_PIN      3     // relay is active LOW
 #define CAL_BUTTON    13    // INPUT_PULLUP — press to re-zero IMU
 #define MPU_ADDR      0x68
 
