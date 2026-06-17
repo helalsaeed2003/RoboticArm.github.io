@@ -60,6 +60,7 @@ bool pumpOn   = false;
 bool wristAutoMode = true;    // true = IMU leveling, false = Processing controls wrist
 
 // ── IMU state ────────────────────────────────────────────────────────────────
+bool  imuOk        = false;   // false = MPU6050 not detected; auto-level disabled
 float pitchOffset  = 0.0;
 float currentPitch = 0.0;
 
@@ -73,6 +74,7 @@ byte serialLen = 0;
 // ─────────────────────────────────────────────────────────────────────────────
 void setup() {
   Serial.begin(9600);
+  Serial.write("PickMasters booting\n");   // instant proof serial is alive
 
   // Pump relay — active LOW, so HIGH = OFF at startup
   pinMode(PUMP_PIN, OUTPUT);
@@ -88,29 +90,39 @@ void setup() {
   pinMode(IN3, OUTPUT);
   pinMode(IN4, OUTPUT);
 
-  // Servos — centre on startup
-  shoulderServo.attach(SHOULDER_PIN);
-  elbowServo.attach(ELBOW_PIN);
-  wristServo.attach(WRIST_PIN);
-  handServo.attach(HAND_PIN);
-  shoulderServo.write(shoulderAngle);
-  elbowServo.write(elbowAngle);
-  wristServo.write(wristAngle);
-  handServo.write(handAngle);
+  // Servos — centre on startup, one at a time to spread out the inrush current
+  shoulderServo.attach(SHOULDER_PIN); shoulderServo.write(shoulderAngle); delay(100);
+  elbowServo.attach(ELBOW_PIN);       elbowServo.write(elbowAngle);       delay(100);
+  wristServo.attach(WRIST_PIN);       wristServo.write(wristAngle);       delay(100);
+  handServo.attach(HAND_PIN);         handServo.write(handAngle);         delay(100);
 
   // Motors idle
   setMotorLeft(0);
   setMotorRight(0);
 
-  // Wake up MPU6050
+  // I2C — a timeout so a missing/shorted IMU can never freeze the board.
+  // setWireTimeout(us, reset_on_timeout): bail out and reset the bus instead
+  // of blocking forever when the MPU6050 doesn't respond.
   Wire.begin();
-  Wire.beginTransmission(MPU_ADDR);
-  Wire.write(0x6B);   // PWR_MGMT_1
-  Wire.write(0x00);   // clear sleep bit
-  Wire.endTransmission(true);
-  delay(200);
+  Wire.setWireTimeout(3000, true);
 
-  calibrateIMU();
+  // Detect the MPU6050 before using it — endTransmission() == 0 means it ACKed.
+  Wire.beginTransmission(MPU_ADDR);
+  imuOk = (Wire.endTransmission(true) == 0);
+
+  if (imuOk) {
+    Wire.beginTransmission(MPU_ADDR);
+    Wire.write(0x6B);   // PWR_MGMT_1
+    Wire.write(0x00);   // clear sleep bit
+    Wire.endTransmission(true);
+    delay(200);
+    calibrateIMU();
+  } else {
+    // No IMU: keep running everything else, just don't auto-level the wrist.
+    wristAutoMode = false;
+    Serial.write("WARN: IMU not found — wrist auto-level disabled\n");
+  }
+
   Serial.write("PickMasters ready\n");
 }
 
@@ -119,7 +131,7 @@ void loop() {
   handleSerial();
   handleCalButton();
 
-  if (millis() - lastIMU >= 20) {   // 50 Hz IMU / wrist update
+  if (imuOk && millis() - lastIMU >= 20) {   // 50 Hz IMU / wrist update
     lastIMU = millis();
     currentPitch = readPitch();
     if (wristAutoMode) {
@@ -223,7 +235,10 @@ float readPitch() {
   Wire.beginTransmission(MPU_ADDR);
   Wire.write(0x3B);   // ACCEL_XOUT_H — start of 6-byte accel block
   Wire.endTransmission(false);
-  Wire.requestFrom(MPU_ADDR, 6, true);
+
+  // If the IMU doesn't return all 6 bytes (unplugged/glitch), keep the last
+  // pitch instead of computing garbage from -1 reads.
+  if (Wire.requestFrom(MPU_ADDR, 6, true) != 6) return currentPitch;
 
   float accelX = (int16_t)(Wire.read() << 8 | Wire.read()) / 16384.0;
   float accelY = (int16_t)(Wire.read() << 8 | Wire.read()) / 16384.0;
@@ -262,6 +277,7 @@ void printStatus() {
   Serial.print(",");     Serial.print(rightDir);
   Serial.print(" P:");   Serial.print(pumpOn ? 1 : 0);
   Serial.print(" MODE:"); Serial.print(wristAutoMode ? "AUTO" : "MAN");
+  Serial.print(" IMU:");  Serial.print(imuOk ? "OK" : "NONE");
   Serial.print(" PITCH:"); Serial.print(currentPitch - pitchOffset, 1);
   Serial.write('\n');
 }
