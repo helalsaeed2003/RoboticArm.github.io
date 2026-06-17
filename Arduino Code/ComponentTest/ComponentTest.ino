@@ -5,7 +5,7 @@
 // Open the Serial Monitor at 9600 baud, set line ending to "Newline" (or just
 // send single characters), and press a key to run each test:
 //
-//   1  — Shoulder servo sweep  (pin 13)
+//   1  — Shoulder servo sweep  (pin 9)
 //   2  — Elbow servo sweep     (pin 10)
 //   3  — Wrist servo sweep     (pin 11)
 //   4  — Hand servo sweep      (pin 12)
@@ -235,7 +235,7 @@ void watchButton() {
 // ── Menu ──────────────────────────────────────────────────────────────────────
 void printMenu() {
   Serial.println(F("------ component test menu ------"));
-  Serial.println(F(" 1  Shoulder servo (pin 13)"));
+  Serial.println(F(" 1  Shoulder servo (pin 9)"));
   Serial.println(F(" 2  Elbow servo    (pin 10)"));
   Serial.println(F(" 3  Wrist servo    (pin 11)"));
   Serial.println(F(" 4  Hand servo     (pin 12)"));

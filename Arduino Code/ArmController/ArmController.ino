@@ -4,7 +4,7 @@
 // Hardware: Arduino Uno + standalone L298N dual H-bridge motor driver
 //
 // Pin usage:
-//   13  — Shoulder servo
+//   9   — Shoulder servo
 //   10  — Elbow servo
 //   11  — Wrist servo
 //   12  — Hand servo
