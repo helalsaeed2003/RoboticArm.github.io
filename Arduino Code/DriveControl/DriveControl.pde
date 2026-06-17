@@ -7,8 +7,8 @@
 //                           fully left/right = pivot in place. Constant speed.
 //   D-pad up/down         — shoulder servo  (±step per frame while held)
 //   D-pad left/right      — elbow servo     (±step per frame while held)
-//   Right stick Y         — wrist servo     (rate control, MANUAL mode only)
-//   Right stick X         — hand servo      (rate control)
+//   Right stick Y         — wrist servo  (digital: full push only, MANUAL mode)
+//   Right stick X         — hand servo   (digital: full push only)
 //   PumpButton            — pump on/off toggle        (rising edge)
 //   CalButton             — IMU re-zero ("cal")       (rising edge)
 //   WristModeButton       — wrist AUTO/MANUAL toggle  (rising edge)
@@ -35,8 +35,7 @@ float wristAngle    = 90;
 float handAngle     = 90;
 
 float dpadStep  = 3.0;   // deg per frame while D-pad held (shoulder/elbow)
-float stickRate = 3.0;   // deg per frame at full deflection (wrist/hand)
-float deadzone  = 0.2;   // right stick deadzone
+float stickStep = 3.0;   // deg per frame while right stick fully pushed (wrist/hand)
 
 // --- Drive state (digital: stick must be fully pushed) ---
 float driveThreshold = 0.9;
@@ -132,9 +131,15 @@ void getUserInput() {
   if (dRight) elbowAngle    += dpadStep;
   if (dLeft)  elbowAngle    -= dpadStep;
 
-  // --- Wrist (right stick Y, MANUAL mode only) & hand (right stick X) ---
-  if (!wristAuto && abs(rightY) > deadzone) wristAngle -= rightY * stickRate;
-  if (abs(rightX) > deadzone)               handAngle  += rightX * stickRate;
+  // --- Wrist (right stick Y, MANUAL only) & hand (right stick X): DIGITAL ---
+  // Like the drive sticks — the servo only moves at FULL deflection, stepping a
+  // fixed amount per frame. No proportional/rate control: half-pushed does nothing.
+  if (!wristAuto) {
+    if (rightY <= -driveThreshold)     wristAngle += stickStep;   // stick up   = wrist up
+    else if (rightY >= driveThreshold) wristAngle -= stickStep;   // stick down = wrist down
+  }
+  if (rightX >= driveThreshold)        handAngle += stickStep;    // stick right = hand +
+  else if (rightX <= -driveThreshold)  handAngle -= stickStep;    // stick left  = hand -
 
   shoulderAngle = constrain(shoulderAngle, 0, 180);
   elbowAngle    = constrain(elbowAngle,    0, 180);

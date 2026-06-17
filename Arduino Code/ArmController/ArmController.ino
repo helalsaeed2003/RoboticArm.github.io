@@ -4,7 +4,7 @@
 // Hardware: Arduino Uno + standalone L298N dual H-bridge motor driver
 //
 // Pin usage:
-//   13  — Shoulder servo
+//   9   — Shoulder servo
 //   10  — Elbow servo
 //   11  — Wrist servo
 //   12  — Hand servo
@@ -26,7 +26,7 @@
 #include <Servo.h>
 
 // ── Pin definitions ──────────────────────────────────────────────────────────
-#define SHOULDER_PIN  13
+#define SHOULDER_PIN  9
 #define ELBOW_PIN     10
 #define WRIST_PIN     11
 #define HAND_PIN      12
