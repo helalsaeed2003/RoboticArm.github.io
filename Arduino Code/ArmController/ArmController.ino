@@ -26,7 +26,6 @@
 #include <Servo.h>
 
 // ── Pin definitions ──────────────────────────────────────────────────────────
-#define SHOULDER_PIN  13
 #define SHOULDER_PIN  9
 #define ELBOW_PIN     10
 #define WRIST_PIN     11
