@@ -75,10 +75,10 @@ DEAD_ZONE_Y = 30
 
 LOCK_CONFIDENCE = 0.80         # must reach this to LOCK onto an item
 
-PIVOT_SPEED = 120              # PWM (0-255) the Arduino uses while spinning base
-DRIVE_SPEED = 120              # PWM (0-255) the Arduino uses while driving base
+PIVOT_SPEED = 70               # PWM (0-255) the Arduino uses while spinning base
+DRIVE_SPEED = 110              # PWM (0-255) the Arduino uses while driving base
 
-COOLDOWN_MAX = 3               # frames to wait between motion pulses
+COOLDOWN_MAX = 6               # frames to wait between motion pulses (higher = gentler)
 
 
 # --------------------------------------------------------------------------- #

@@ -31,7 +31,7 @@
 #define IN3  7     // direction A, right wheel
 #define IN4  8     // direction B, right wheel
 
-const unsigned long PULSE_MS = 120;   // how long one motion pulse lasts
+const unsigned long PULSE_MS = 70;    // how long one motion pulse lasts (shorter = gentler nudges)
 
 unsigned long stopAt = 0;             // millis() time to auto-stop (0 = stopped)
 
