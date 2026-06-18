@@ -3,11 +3,11 @@ from ultralytics import YOLO
 import serial
 import time
 
-model = YOLO(r"C:\Users\leen2\OneDrive\Desktop\PICK&PLACE\model_v2.pt")
-cap = cv2.VideoCapture(1)
+model = YOLO(r"C:\Users\Helal\Desktop\School\term 13\Mechatronics\Github\RoboticArm.github.io\OpenCV\PICK&PLACE\model_v2.pt")
+cap = cv2.VideoCapture(0)
 
 try:
-    arduino = serial.Serial('COM3', 9600, timeout=1)
+    arduino = serial.Serial('COM10', 9600, timeout=1)
     time.sleep(2)
     print("Arduino connected!")
 except Exception as e:
