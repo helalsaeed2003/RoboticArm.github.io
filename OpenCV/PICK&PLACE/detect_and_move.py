@@ -85,9 +85,17 @@ COOLDOWN_MAX = 3               # frames to wait between motion pulses
 #  Setup
 # --------------------------------------------------------------------------- #
 model = YOLO(MODEL_PATH)
-cap = cv2.VideoCapture(CAMERA_INDEX)
+# Use the DirectShow backend on Windows -- the default backend can hang for a
+# long time while opening the camera.
+cap = cv2.VideoCapture(CAMERA_INDEX, cv2.CAP_DSHOW)
 cap.set(cv2.CAP_PROP_FRAME_WIDTH,  FRAME_WIDTH)
 cap.set(cv2.CAP_PROP_FRAME_HEIGHT, FRAME_HEIGHT)
+
+if not cap.isOpened():
+    raise RuntimeError(
+        f"Could not open camera index {CAMERA_INDEX}. "
+        f"Try a different CAMERA_INDEX (0, 1, 2 ...)."
+    )
 
 try:
     arduino = serial.Serial(SERIAL_PORT, BAUD_RATE, timeout=1)
