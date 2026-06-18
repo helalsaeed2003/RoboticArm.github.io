@@ -60,8 +60,8 @@ CENTER_Y     = FRAME_HEIGHT // 2
 
 # Half-size of the target box drawn at the crossing of the two lines.
 # The item must fit COMPLETELY inside this box.
-BOX_HALF_W = 90
-BOX_HALF_H = 90
+BOX_HALF_W = 55
+BOX_HALF_H = 55
 
 BOX_LEFT   = CENTER_X - BOX_HALF_W
 BOX_RIGHT  = CENTER_X + BOX_HALF_W
