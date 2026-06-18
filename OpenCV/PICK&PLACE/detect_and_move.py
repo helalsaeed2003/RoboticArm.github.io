@@ -56,7 +56,10 @@ CAMERA_INDEX = 0
 FRAME_WIDTH  = 640
 FRAME_HEIGHT = 480
 CENTER_X     = FRAME_WIDTH  // 2
-CENTER_Y     = FRAME_HEIGHT // 2
+# Shift the target (box + horizontal line) lower on the Y axis. Increase
+# BOX_Y_OFFSET to push it further down the frame.
+BOX_Y_OFFSET = 80
+CENTER_Y     = FRAME_HEIGHT // 2 + BOX_Y_OFFSET
 
 # Half-size of the target box drawn at the crossing of the two lines.
 # The item must fit COMPLETELY inside this box.
@@ -73,7 +76,7 @@ BOX_BOTTOM = CENTER_Y + BOX_HALF_H
 DEAD_ZONE_X = 30
 DEAD_ZONE_Y = 30
 
-LOCK_CONFIDENCE = 0.80         # must reach this to LOCK onto an item
+LOCK_CONFIDENCE = 0.50         # must reach this to LOCK onto an item
 
 PIVOT_SPEED = 70               # PWM (0-255) the Arduino uses while spinning base
 DRIVE_SPEED = 110              # PWM (0-255) the Arduino uses while driving base
