@@ -78,8 +78,8 @@ DEAD_ZONE_Y = 30
 
 LOCK_CONFIDENCE = 0.50         # must reach this to LOCK onto an item
 
-PIVOT_SPEED = 70               # PWM (0-255) the Arduino uses while spinning base
-DRIVE_SPEED = 110              # PWM (0-255) the Arduino uses while driving base
+PIVOT_SPEED = 90               # PWM (0-255) the Arduino uses while spinning base
+DRIVE_SPEED = 130              # PWM (0-255) the Arduino uses while driving base
 
 COOLDOWN_MAX = 6               # frames to wait between motion pulses (higher = gentler)
 
@@ -187,7 +187,15 @@ while True:
 
         command = None
         if fully_inside:
-            status, color = f"READY - {class_name} in box", (0, 255, 0)
+            # Item is completely inside the box -> we're done. Stop and quit.
+            send("STOP")
+            status, color = f"DONE - {class_name} in box", (0, 255, 0)
+            cv2.putText(annotated, status, (10, 50),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.8, color, 2)
+            cv2.imshow("Pick & Move", annotated)
+            cv2.waitKey(800)          # show the result briefly
+            print(f"Item id {locked_id} ({class_name}) fully inside box. Quitting.")
+            break
         elif obj_cx < CENTER_X - DEAD_ZONE_X:
             # Item is left of the vertical line -> spin base left.
             command = f"PIVOT_LEFT {PIVOT_SPEED}"
