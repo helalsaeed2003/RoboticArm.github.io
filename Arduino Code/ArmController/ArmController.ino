@@ -1,43 +1,44 @@
 // PickMasters — ArmController firmware
 // 4-DOF robotic arm, manual control over USB serial (paired with DriveControl.pde)
 //
-// Hardware: Arduino Uno + Adafruit L293D Motor Shield v1 (AFMotor library)
+// Hardware: Arduino Uno + standalone L298N dual H-bridge motor driver
 //
 // Pin usage:
-//   A0  — Shoulder servo
-//   A1  — Elbow servo
-//   A2  — Wrist servo
-//   A3  — Hand servo
+//   9   — Shoulder servo
+//   10  — Elbow servo
+//   11  — Wrist servo
+//   12  — Hand servo
 //   A4  — IMU SDA (I2C, reserved by Wire)
 //   A5  — IMU SCL (I2C, reserved by Wire)
-//   2   — Pump relay (ACTIVE LOW: LOW = on, HIGH = off, starts off)
-//   9   — IMU calibration button (INPUT_PULLUP)
-//   Motor shield occupies pins 3,4,5,6,7,8,11,12 internally — do not reuse.
-//   DC motors: M1 = left wheel, M2 = right wheel.
+//   3   — Pump relay (ACTIVE LOW: LOW = on, HIGH = off, starts off)
+//   L298N driver: ENA=5, IN1=2, IN2=4 (left wheel);
+//                 ENB=6, IN3=7, IN4=8 (right wheel).
 //
 // Serial protocol (9600 baud, newline-terminated, ONE combined message per frame):
 //   S<shoulder>,<elbow>,<wrist>,<hand>,M<left>,<right>,P<0|1>,W<0|1>
 //     servo angles 0..180, motor directions -1/0/1, P1 = pump on,
 //     W1 = wrist AUTO (IMU leveling), W0 = wrist MANUAL
-//   cal     — re-zero IMU pitch offset (also hardware button on pin 9)
+//   cal     — re-zero IMU pitch offset (sent by the DriveControl CalButton)
 //   status  — print all current angles and states (single compact line)
 
 #include <Wire.h>
 #include <Servo.h>
-#include <AFMotor.h>   // Adafruit Motor Shield v1 library
 
 // ── Pin definitions ──────────────────────────────────────────────────────────
-#define SHOULDER_PIN  A0
-#define ELBOW_PIN     A1
-#define WRIST_PIN     A2
-#define HAND_PIN      A3
-#define PUMP_PIN      2     // relay is active LOW
-#define CAL_BUTTON    9     // INPUT_PULLUP — press to re-zero IMU
+#define SHOULDER_PIN  9
+#define ELBOW_PIN     10
+#define WRIST_PIN     11
+#define HAND_PIN      12
+#define PUMP_PIN      3     // relay is active LOW
 #define MPU_ADDR      0x68
 
-// ── DC motors via L293D motor shield ─────────────────────────────────────────
-AF_DCMotor motorLeft(1);
-AF_DCMotor motorRight(2);
+// ── DC motors via L298N dual H-bridge ────────────────────────────────────────
+#define ENA  5     // PWM speed, left wheel
+#define IN1  2     // direction A, left wheel
+#define IN2  4     // direction B, left wheel
+#define ENB  6     // PWM speed, right wheel
+#define IN3  7     // direction A, right wheel
+#define IN4  8     // direction B, right wheel
 const int DRIVE_SPEED = 200;   // single constant speed when a motor is active
 
 // ── Servos ───────────────────────────────────────────────────────────────────
@@ -57,11 +58,11 @@ bool pumpOn   = false;
 bool wristAutoMode = true;    // true = IMU leveling, false = Processing controls wrist
 
 // ── IMU state ────────────────────────────────────────────────────────────────
+bool  imuOk        = false;   // false = MPU6050 not detected; auto-level disabled
 float pitchOffset  = 0.0;
 float currentPitch = 0.0;
 
 unsigned long lastIMU    = 0;
-bool          prevCalBtn = HIGH;   // HIGH = not pressed (PULLUP)
 
 // ── Serial receive buffer ─────────────────────────────────────────────────────
 char serialBuf[64];
@@ -70,47 +71,61 @@ byte serialLen = 0;
 // ─────────────────────────────────────────────────────────────────────────────
 void setup() {
   Serial.begin(9600);
+  Serial.write("PickMasters booting\n");   // instant proof serial is alive
 
   // Pump relay — active LOW, so HIGH = OFF at startup
   pinMode(PUMP_PIN, OUTPUT);
   digitalWrite(PUMP_PIN, HIGH);
 
-  pinMode(CAL_BUTTON, INPUT_PULLUP);
+  // L298N control pins
+  pinMode(ENA, OUTPUT);
+  pinMode(IN1, OUTPUT);
+  pinMode(IN2, OUTPUT);
+  pinMode(ENB, OUTPUT);
+  pinMode(IN3, OUTPUT);
+  pinMode(IN4, OUTPUT);
 
-  // Servos — centre on startup
-  shoulderServo.attach(SHOULDER_PIN);
-  elbowServo.attach(ELBOW_PIN);
-  wristServo.attach(WRIST_PIN);
-  handServo.attach(HAND_PIN);
-  shoulderServo.write(shoulderAngle);
-  elbowServo.write(elbowAngle);
-  wristServo.write(wristAngle);
-  handServo.write(handAngle);
+  // Servos — centre on startup, one at a time to spread out the inrush current
+  shoulderServo.attach(SHOULDER_PIN); shoulderServo.write(shoulderAngle); delay(100);
+  elbowServo.attach(ELBOW_PIN);       elbowServo.write(elbowAngle);       delay(100);
+  wristServo.attach(WRIST_PIN);       wristServo.write(wristAngle);       delay(100);
+  handServo.attach(HAND_PIN);         handServo.write(handAngle);         delay(100);
 
   // Motors idle
-  motorLeft.setSpeed(0);
-  motorRight.setSpeed(0);
-  motorLeft.run(RELEASE);
-  motorRight.run(RELEASE);
+  setMotorLeft(0);
+  setMotorRight(0);
 
-  // Wake up MPU6050
+  // I2C — a timeout so a missing/shorted IMU can never freeze the board.
+  // setWireTimeout(us, reset_on_timeout): bail out and reset the bus instead
+  // of blocking forever when the MPU6050 doesn't respond.
   Wire.begin();
-  Wire.beginTransmission(MPU_ADDR);
-  Wire.write(0x6B);   // PWR_MGMT_1
-  Wire.write(0x00);   // clear sleep bit
-  Wire.endTransmission(true);
-  delay(200);
+  Wire.setWireTimeout(3000, true);
 
-  calibrateIMU();
+  // Detect the MPU6050 before using it — endTransmission() == 0 means it ACKed.
+  Wire.beginTransmission(MPU_ADDR);
+  imuOk = (Wire.endTransmission(true) == 0);
+
+  if (imuOk) {
+    Wire.beginTransmission(MPU_ADDR);
+    Wire.write(0x6B);   // PWR_MGMT_1
+    Wire.write(0x00);   // clear sleep bit
+    Wire.endTransmission(true);
+    delay(200);
+    calibrateIMU();
+  } else {
+    // No IMU: keep running everything else, just don't auto-level the wrist.
+    wristAutoMode = false;
+    Serial.write("WARN: IMU not found — wrist auto-level disabled\n");
+  }
+
   Serial.write("PickMasters ready\n");
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
 void loop() {
   handleSerial();
-  handleCalButton();
 
-  if (millis() - lastIMU >= 20) {   // 50 Hz IMU / wrist update
+  if (imuOk && millis() - lastIMU >= 20) {   // 50 Hz IMU / wrist update
     lastIMU = millis();
     currentPitch = readPitch();
     if (wristAutoMode) {
@@ -156,8 +171,8 @@ void parseCommand(char *cmd) {
         wristServo.write(wristAngle);
       }
 
-      setMotor(motorLeft,  l);
-      setMotor(motorRight, r);
+      setMotorLeft(l);
+      setMotorRight(r);
       leftDir  = l;
       rightDir = r;
 
@@ -174,17 +189,38 @@ void parseCommand(char *cmd) {
   }
 }
 
-// ── DC motor control ──────────────────────────────────────────────────────────
-void setMotor(AF_DCMotor &m, int dir) {
+// ── DC motor control (L298N) ──────────────────────────────────────────────────
+// Left wheel: ENA + IN1/IN2.  dir > 0 = forward, dir < 0 = backward, 0 = stop.
+void setMotorLeft(int dir) {
   if (dir > 0) {
-    m.setSpeed(DRIVE_SPEED);
-    m.run(FORWARD);
+    digitalWrite(IN1, HIGH);
+    digitalWrite(IN2, LOW);
+    analogWrite(ENA, DRIVE_SPEED);
   } else if (dir < 0) {
-    m.setSpeed(DRIVE_SPEED);
-    m.run(BACKWARD);
+    digitalWrite(IN1, LOW);
+    digitalWrite(IN2, HIGH);
+    analogWrite(ENA, DRIVE_SPEED);
   } else {
-    m.setSpeed(0);
-    m.run(RELEASE);
+    digitalWrite(IN1, LOW);
+    digitalWrite(IN2, LOW);
+    analogWrite(ENA, 0);
+  }
+}
+
+// Right wheel: ENB + IN3/IN4.  dir > 0 = forward, dir < 0 = backward, 0 = stop.
+void setMotorRight(int dir) {
+  if (dir > 0) {
+    digitalWrite(IN3, HIGH);
+    digitalWrite(IN4, LOW);
+    analogWrite(ENB, DRIVE_SPEED);
+  } else if (dir < 0) {
+    digitalWrite(IN3, LOW);
+    digitalWrite(IN4, HIGH);
+    analogWrite(ENB, DRIVE_SPEED);
+  } else {
+    digitalWrite(IN3, LOW);
+    digitalWrite(IN4, LOW);
+    analogWrite(ENB, 0);
   }
 }
 
@@ -193,7 +229,10 @@ float readPitch() {
   Wire.beginTransmission(MPU_ADDR);
   Wire.write(0x3B);   // ACCEL_XOUT_H — start of 6-byte accel block
   Wire.endTransmission(false);
-  Wire.requestFrom(MPU_ADDR, 6, true);
+
+  // If the IMU doesn't return all 6 bytes (unplugged/glitch), keep the last
+  // pitch instead of computing garbage from -1 reads.
+  if (Wire.requestFrom(MPU_ADDR, 6, true) != 6) return currentPitch;
 
   float accelX = (int16_t)(Wire.read() << 8 | Wire.read()) / 16384.0;
   float accelY = (int16_t)(Wire.read() << 8 | Wire.read()) / 16384.0;
@@ -212,16 +251,6 @@ void calibrateIMU() {
   pitchOffset = sum / 50.0;
 }
 
-// ── Hardware calibration button ───────────────────────────────────────────────
-void handleCalButton() {
-  bool btn = digitalRead(CAL_BUTTON);
-  if (btn == LOW && prevCalBtn == HIGH) {   // falling edge = pressed
-    calibrateIMU();
-    Serial.write("cal ok\n");
-  }
-  prevCalBtn = btn;
-}
-
 // ── Status report (single compact line) ──────────────────────────────────────
 void printStatus() {
   Serial.print("S:");    Serial.print(shoulderAngle);
@@ -232,6 +261,7 @@ void printStatus() {
   Serial.print(",");     Serial.print(rightDir);
   Serial.print(" P:");   Serial.print(pumpOn ? 1 : 0);
   Serial.print(" MODE:"); Serial.print(wristAutoMode ? "AUTO" : "MAN");
+  Serial.print(" IMU:");  Serial.print(imuOk ? "OK" : "NONE");
   Serial.print(" PITCH:"); Serial.print(currentPitch - pitchOffset, 1);
   Serial.write('\n');
 }
