@@ -7,8 +7,8 @@
 //                           fully left/right = pivot in place. Constant speed.
 //   D-pad up/down         — shoulder servo  (±step per frame while held)
 //   D-pad left/right      — elbow servo     (±step per frame while held)
-//   Right stick Y         — wrist servo  (digital: full push only, MANUAL mode)
-//   Right stick X         — hand servo   (digital: full push only)
+//   Right stick Y         — wrist servo     (rate control, MANUAL mode only)
+//   Right stick X         — hand servo      (rate control)
 //   PumpButton            — pump on/off toggle        (rising edge)
 //   CalButton             — IMU re-zero ("cal")       (rising edge)
 //   WristModeButton       — wrist AUTO/MANUAL toggle  (rising edge)
@@ -26,7 +26,6 @@ import net.java.games.input.*;
 ControlDevice cont;
 ControlIO control;
 Serial port;
-boolean controllerReady = false;
 
 // --- Servo state ---
 float shoulderAngle = 90;
@@ -35,7 +34,8 @@ float wristAngle    = 90;
 float handAngle     = 90;
 
 float dpadStep  = 3.0;   // deg per frame while D-pad held (shoulder/elbow)
-float stickStep = 3.0;   // deg per frame while right stick fully pushed (wrist/hand)
+float stickRate = 3.0;   // deg per frame at full deflection (wrist/hand)
+float deadzone  = 0.2;   // right stick deadzone
 
 // --- Drive state (digital: stick must be fully pushed) ---
 float driveThreshold = 0.9;
@@ -61,47 +61,22 @@ void setup() {
   size(440, 290);
   frameRate(50);
 
-  // GCP on Windows enumerates every input device (including virtual ones like
-  // FakerInput).  Wrapping init in try/catch lets us recover gracefully.
-  try {
-    control = ControlIO.getInstance(this);
-    cont = control.getMatchedDevice("PickMasters");
-  } catch (Exception e) {
-    println("Warning during controller init: " + e.getMessage());
-  }
+  control = ControlIO.getInstance(this);
+  cont = control.getMatchedDevice("PickMasters");
 
   if (cont == null) {
     println("Controller not found — check data/PickMasters config");
     System.exit(-1);
   }
-  controllerReady = true;
 
-  // Pick the Arduino's serial port automatically: COM1 is almost always the
-  // PC's built-in port, so prefer the last port that isn't COM1.  If the
-  // Arduino is unplugged (or its driver is missing) no usable port exists.
-  String[] ports = Serial.list();
-  printArray(ports);
-
-  String portName = null;
-  for (int i = ports.length - 1; i >= 0; i--) {
-    if (!ports[i].equals("COM1")) { portName = ports[i]; break; }
-  }
-  if (portName == null && ports.length > 0) portName = ports[0];
-
-  if (portName == null) {
-    println("No serial port found — is the Arduino plugged in?");
-    System.exit(-1);
-  }
-
-  println("Connecting to " + portName);
-  port = new Serial(this, portName, 9600);
+  println(Serial.list());
+  port = new Serial(this, Serial.list()[1], 9600);
   port.bufferUntil('\n');
 
   delay(2000);   // let the Arduino reboot after the port opens
 }
 
 void getUserInput() {
-  if (!controllerReady || cont == null) return;
   float leftX  = cont.getSlider("LeftX").getValue();
   float leftY  = cont.getSlider("LeftY").getValue();
   float rightX = cont.getSlider("RightX").getValue();
@@ -131,15 +106,9 @@ void getUserInput() {
   if (dRight) elbowAngle    += dpadStep;
   if (dLeft)  elbowAngle    -= dpadStep;
 
-  // --- Wrist (right stick Y, MANUAL only) & hand (right stick X): DIGITAL ---
-  // Like the drive sticks — the servo only moves at FULL deflection, stepping a
-  // fixed amount per frame. No proportional/rate control: half-pushed does nothing.
-  if (!wristAuto) {
-    if (rightY <= -driveThreshold)     wristAngle += stickStep;   // stick up   = wrist up
-    else if (rightY >= driveThreshold) wristAngle -= stickStep;   // stick down = wrist down
-  }
-  if (rightX >= driveThreshold)        handAngle += stickStep;    // stick right = hand +
-  else if (rightX <= -driveThreshold)  handAngle -= stickStep;    // stick left  = hand -
+  // --- Wrist (right stick Y, MANUAL mode only) & hand (right stick X) ---
+  if (!wristAuto && abs(rightY) > deadzone) wristAngle -= rightY * stickRate;
+  if (abs(rightX) > deadzone)               handAngle  += rightX * stickRate;
 
   shoulderAngle = constrain(shoulderAngle, 0, 180);
   elbowAngle    = constrain(elbowAngle,    0, 180);
@@ -178,14 +147,7 @@ void sendState() {
 }
 
 void draw() {
-  // ConcurrentModificationException is a known GCP library bug (device list
-  // iterated on two threads simultaneously).  Catching it here lets the sketch
-  // keep running instead of crashing — the missed frame is harmless.
-  try {
-    getUserInput();
-  } catch (java.util.ConcurrentModificationException e) {
-    // skip this frame's input, will re-read next frame
-  }
+  getUserInput();
   sendState();
 
   background(40, 60, 100);
