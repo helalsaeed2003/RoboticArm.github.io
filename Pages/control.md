@@ -31,7 +31,7 @@ $$u(t) = K_p \cdot e(t) \;+\; K_i \int_0^t e(\tau)\,d\tau \;+\; K_d \frac{de}{dt
 
 The PID output is added to the 90° neutral position and constrained to [0, 180]° before writing to the servo. The integral term and last-error state are reset on recalibration (`cal` command) to avoid transient kicks.
 
-**Implementation:** `Arduino Code/ArmController_PID_Safety/ArmController_PID_Safety.ino`, function `pidCompute()`.
+**Implementation:** `Final Code/ArmController_PID_Safety/ArmController_PID_Safety.ino`, function `pidCompute()`.
 
 ## Fuzzy Logic Controller – Vision-Based Motor Speed
 
@@ -61,7 +61,7 @@ $$\text{speed} = \frac{\mu_S \cdot 80 + \mu_M \cdot 150 + \mu_L \cdot 230}{\mu_S
 
 The Python vision script (`detect_and_move_fuzzy.py`) sends `FUZZY_PIVOT <error>` or `FUZZY_DRIVE <error>` commands with the raw signed pixel offset; the Arduino firmware determines direction from the sign and speed from the fuzzy inference engine.
 
-**Implementation:** `Arduino Code/PickAndMove_FuzzyLogic/PickAndMove_FuzzyLogic.ino`, functions `fuzzyTrapezoid()` and `fuzzyComputeSpeed()`.
+**Implementation:** `Final Code/PickAndMove_FuzzyLogic/PickAndMove_FuzzyLogic.ino`, functions `fuzzyTrapezoid()` and `fuzzyComputeSpeed()`.
 
 ## Safety Interlock (Sequential Logic)
 
@@ -85,7 +85,7 @@ When the interlock **clears** (all conditions restored):
 
 The hardware interlock pin (A0) can be connected to a physical emergency-stop button, a safety relay, or a light-curtain output. During development without external safety hardware, the pin can be tied HIGH to keep the interlock permanently clear.
 
-**Implementation:** `Arduino Code/ArmController_PID_Safety/ArmController_PID_Safety.ino`, function `updateSafetyInterlock()`.
+**Implementation:** `Final Code/ArmController_PID_Safety/ArmController_PID_Safety.ino`, function `updateSafetyInterlock()`.
 
 ## Reliability and Safety Mechanisms
 
