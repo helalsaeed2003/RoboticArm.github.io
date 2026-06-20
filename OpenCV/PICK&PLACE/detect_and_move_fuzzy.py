@@ -197,19 +197,21 @@ while True:
             print(f"Item id {locked_id} ({class_name}) fully inside box. Quitting.")
             break
         elif obj_cx < CENTER_X - DEAD_ZONE_X:
-            # Item is left of the vertical line -> spin base left.
-            command = f"PIVOT_LEFT {PIVOT_SPEED}"
-            status, color = "SPIN BASE LEFT", (0, 255, 255)
+            err_x = obj_cx - CENTER_X
+            command = f"FUZZY_PIVOT {err_x}"
+            status, color = f"FUZZY PIVOT LEFT (err={err_x})", (0, 255, 255)
         elif obj_cx > CENTER_X + DEAD_ZONE_X:
-            command = f"PIVOT_RIGHT {PIVOT_SPEED}"
-            status, color = "SPIN BASE RIGHT", (0, 255, 255)
+            err_x = obj_cx - CENTER_X
+            command = f"FUZZY_PIVOT {err_x}"
+            status, color = f"FUZZY PIVOT RIGHT (err={err_x})", (0, 255, 255)
         elif obj_cy < CENTER_Y - DEAD_ZONE_Y:
-            # Item is above the horizontal line -> move base forward.
-            command = f"DRIVE_FWD {DRIVE_SPEED}"
-            status, color = "MOVE BASE FORWARD", (255, 165, 0)
+            err_y = CENTER_Y - obj_cy
+            command = f"FUZZY_DRIVE {err_y}"
+            status, color = f"FUZZY DRIVE FWD (err={err_y})", (255, 165, 0)
         elif obj_cy > CENTER_Y + DEAD_ZONE_Y:
-            command = f"DRIVE_BACK {DRIVE_SPEED}"
-            status, color = "MOVE BASE BACK", (255, 165, 0)
+            err_y = CENTER_Y - obj_cy
+            command = f"FUZZY_DRIVE {err_y}"
+            status, color = f"FUZZY DRIVE BACK (err={err_y})", (255, 165, 0)
         else:
             # Centre is on the cross but the box isn't fully contained yet
             # (item bigger than the dead zone) -> nudge it the rest of the way.
