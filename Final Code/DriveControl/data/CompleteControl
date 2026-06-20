@@ -1,0 +1,6 @@
+Robotic arm
+LeftX 	Turn	3	SLIDER	X Axis	0	1.0	0.0
+LeftY	Move	3	SLIDER	Y Axis	0	1.0	0.0
+RightY	Shoulder Motor	3	SLIDER	Y Rotation	0	1.0	0.0
+RightX 	Elbow Motor	3	SLIDER	X Rotation	0	1.0	0.0
+PumpButton	Pump	1	BUTTON	Button 0	0	0.0	0.0
