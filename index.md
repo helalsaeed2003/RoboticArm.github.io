@@ -1,80 +1,101 @@
-# PickMasters – 4-DOF Pick-and-Place Robotic Arm
+# PickMasters — Smart Pick-and-Place Robotic System
 
-**MEC 483: Mechatronics System Design | Abu Dhabi University – Spring 2026**
+**MEC 483: Mechatronics System Design | Abu Dhabi University — Spring 2026**
 
----
+| Member | Role |
+|--------|------|
+| Leen | Group Leader — Computer Vision & Project Coordination |
+| Mohamed | End Effector, Suction System & ROS Digital Twin |
+| Helal | Mechanical Design, Firmware, Power System & Manual Control |
 
-## Team Members
-
-| Name | Role |
-|------|------|
-| Helal | CAD Design & System Integration |
-| Leen | Computer Vision & Sensing |
-| Mohamed | Hardware & Firmware Development |
+![Final assembled robotic arm and mobile base](media/figure1.jpg)
 
 ---
 
-## Problem Statement
+## Executive Summary
 
-In many industrial and educational settings, repetitive pick-and-place tasks are performed manually, leading to inefficiency, fatigue, and inconsistency. There is a need for an affordable, compact robotic arm system capable of autonomously identifying, picking, and placing objects using computer vision — while also supporting manual operator control for flexibility.
+- 4-DOF robotic arm on a two-wheeled mobile base with computer vision
+- Dual end effector: vacuum suction cup + motorised claw
+- Two operating modes: manual (Bluetooth gamepad) and automatic (YOLOv11 object detection)
+- Real-time detection at >90% confidence; IMU-based wrist auto-levelling
 
----
-
-## Abstract
-
-This project presents the design and development of a 4-DOF pick-and-place robotic arm controlled via a PC–Arduino architecture. The system operates in two modes: an **automatic mode** using OpenCV-based color and shape detection to identify and locate target objects, and a **manual mode** using keyboard or gamepad input via pygame. The arm features MG996R servo actuators for the shoulder, elbow, and wrist joints, a JGA25-370 DC gearmotor with quadrature encoder for 360° base rotation, and a custom vacuum suction end effector with IMU-based auto-levelling. A Python application on the PC handles computer vision, inverse kinematics, and user interface, while the Arduino R4 manages real-time servo control and PID-based motor control via USB serial communication. The project also includes a ROS2-integrated Gazebo digital twin for simulation and verification.
-
----
-
-## [Background – Literature Review](Pages/literature-review.md)
+[Read more →](pages/executive-summary.md)
 
 ---
 
-## Methods
+## Problem Definition
 
-### Engineering Analysis
+- Industrial pick-and-place tasks are repetitive and error-prone when done manually
+- Goal: build an educational-scale integrated mechatronic system from hobby-grade parts
+- Design criteria: 300–500 mm reach, 4-DOF, ≥90% detection accuracy, <200 ms manual response
 
-- [Sensing and Signal Architecture](Pages/sensing.md)
-- [Actuation and Mechanical Drive](Pages/actuation.md)
-- [Control Logic and Programming](Pages/control.md)
-- [Advanced Modeling and Optimization](Pages/modeling.md)
-
-### Testing
-
-- [Prototype Construction](Pages/prototype.md)
-- [Final Integration and Demonstration](Pages/integration.md)
+[Read more →](pages/problem-definition.md)
 
 ---
 
-## [Results](Pages/results.md)
+## Project Management
+
+- Three-member team spanning mechanical, electronic, and software disciplines
+- 13-week timeline from sensing architecture through final integration
+- Weekly progress tracking with clear per-member deliverables
+
+[Read more →](pages/project-management.md)
 
 ---
 
-## [Discussion](Pages/discussion.md)
+## System Design
+
+- **System Overview** — Block diagram of all subsystems and their interconnections
+  [Read more →](pages/system-overview.md)
+- **Mechanical Design** — 4-DOF kinematic chain, 3D-printed PLA links, laser-cut acrylic base
+  [Read more →](pages/mechanical-design.md)
+- **Electrical Design** — Two-rail power architecture, Arduino Uno R3, full pin allocation
+  [Read more →](pages/electrical-design.md)
 
 ---
 
-## [Project Management – Gantt Chart](Pages/gantt.md)
+## Sensing & Actuation
 
-<iframe
-  src="https://docs.google.com/spreadsheets/d/1vQUNIplIJCaTI_P2jxYhI44QH2mPTx2C/htmlembed"
-  width="100%"
-  height="600"
-  frameborder="0"
-  style="border: 1px solid #ccc;">
-</iframe>
+- **Sensing and Signal Architecture** — USB camera, MPU6050 IMU, Bluetooth gamepad
+  [Read more →](pages/sensing.md)
+- **Actuation** — MG996R servos, DC gear motors, 12 V vacuum pump, relay switching
+  [Read more →](pages/actuation.md)
 
 ---
 
-## [Bibliography](Pages/bibliography.md)
+## Software & Control
+
+- **Embedded Control Logic** — PID wrist levelling, Mamdani fuzzy vision-guided motion, safety interlock
+  [Read more →](pages/embedded-control.md)
+- **Software Design** — YOLOv11 vision pipeline, Processing manual control, ROS 2 digital twin
+  [Read more →](pages/software-design.md)
 
 ---
 
-## [Appendix](Pages/appendix.md)
+## Analysis & Validation
+
+- **Mathematical Modelling** — DH parameters, static torque verification, Bode analysis of the wrist PID loop
+  [Read more →](pages/modelling.md)
+- **Integration and Testing** — Assembly sequence, calibration, test results and acknowledged limitations
+  [Read more →](pages/integration-testing.md)
 
 ---
 
-## [Resources – Software & Hardware](Pages/resources.md)
+## Reflections
+
+- **Lessons Learned** — Component ratings, decoupling capacitors, power rail separation, realistic training data
+  [Read more →](pages/lessons-learned.md)
+- **Future Work** — Complete auto pick-and-place, functional ROS 2 twin, closed-loop DC motor control
+  [Read more →](pages/future-work.md)
+
+---
+
+## Appendices
+
+- [References](pages/references.md)
+- [Bill of Materials](pages/bill-of-materials.md)
+- [User Manual](pages/user-manual.md)
+- [Software Listings](pages/software-listings.md)
 
 ---
 

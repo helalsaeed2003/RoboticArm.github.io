@@ -1,0 +1,291 @@
+<svg width="1800" height="2520" viewBox="0 0 1800 2520" xmlns="http://www.w3.org/2000/svg" font-family="Arial, sans-serif">
+
+<defs>
+  <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+    <path d="M1 1L9 5L1 9" fill="none" stroke="context-stroke" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+  </marker>
+  <marker id="arrowd" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+    <path d="M1 1L9 5L1 9" fill="none" stroke="context-stroke" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+  </marker>
+  <style>
+    text { dominant-baseline: middle; }
+    .title { font-size: 24px; font-weight: bold; fill: #0D1B3E; }
+    .subtitle { font-size: 13px; fill: #5F5E5A; font-style: italic; }
+    .band { fill: #0D1B3E; }
+    .band-text { font-size: 16px; font-weight: bold; fill: #FFFFFF; }
+    .col-title { font-size: 17px; font-weight: bold; fill: #0D1B3E; }
+
+    .terminator { fill: #2C3E50; stroke: #0D1B3E; stroke-width: 2; }
+    .t-term { font-size: 14px; font-weight: bold; fill: #FFFFFF; }
+
+    .process { fill: #E1F5EE; stroke: #028090; stroke-width: 1.6; }
+    .predef  { fill: #EEEDFE; stroke: #534AB7; stroke-width: 1.6; }
+    .decision{ fill: #FAEEDA; stroke: #854F0B; stroke-width: 1.6; }
+    .io      { fill: #C8E6F5; stroke: #028090; stroke-width: 1.6; }
+    .setup   { fill: #FFE6E0; stroke: #993C1D; stroke-width: 1.6; }
+    .store   { fill: #FAECE7; stroke: #993C1D; stroke-width: 1.6; }
+    .cloud   { fill: #F1EFE8; stroke: #5F5E5A; stroke-width: 1.6; }
+    .hw      { fill: #F1EFE8; stroke: #5F5E5A; stroke-width: 1.6; }
+
+    .t-proc-b { font-size: 13px; font-weight: bold; fill: #085041; }
+    .t-proc   { font-size: 12px; fill: #085041; }
+    .t-pred-b { font-size: 13px; font-weight: bold; fill: #26215C; }
+    .t-pred   { font-size: 12px; fill: #26215C; }
+    .t-dec-b  { font-size: 13px; font-weight: bold; fill: #633806; }
+    .t-dec    { font-size: 11px; fill: #633806; font-style: italic; }
+    .t-io-b   { font-size: 13px; font-weight: bold; fill: #085041; }
+    .t-io     { font-size: 12px; fill: #085041; }
+    .t-setup-b{ font-size: 13px; font-weight: bold; fill: #712B13; }
+    .t-setup  { font-size: 12px; fill: #712B13; }
+    .t-store-b{ font-size: 13px; font-weight: bold; fill: #712B13; }
+    .t-store  { font-size: 11px; fill: #5F5E5A; }
+    .t-cloud-b{ font-size: 14px; font-weight: bold; fill: #2C2C2A; }
+    .t-cloud  { font-size: 11px; fill: #5F5E5A; }
+    .t-hw-b   { font-size: 12px; font-weight: bold; fill: #2C2C2A; }
+    .t-hw     { font-size: 10px; fill: #5F5E5A; }
+
+    .arr   { stroke: #2C3E50; stroke-width: 2; fill: none; }
+    .arrd  { stroke: #5F5E5A; stroke-width: 1.6; fill: none; stroke-dasharray: 5 4; }
+    .arry  { stroke: #2EAD7A; stroke-width: 2; fill: none; }
+    .arrn  { stroke: #C0392B; stroke-width: 2; fill: none; }
+    .arrpwr{ stroke: #993C1D; stroke-width: 1.6; fill: none; stroke-dasharray: 5 3; }
+    .lyes  { font-size: 12px; font-weight: bold; fill: #2EAD7A; }
+    .lno   { font-size: 12px; font-weight: bold; fill: #C0392B; }
+    .annot { font-size: 12px; fill: #5F5E5A; font-style: italic; }
+  </style>
+</defs>
+
+<rect width="1800" height="2520" fill="#FFFFFF"/>
+<text class="title" x="900.0" y="34" text-anchor="middle">PickMasters — Software Architecture and Control Flow</text>
+<text class="subtitle" x="900.0" y="56" text-anchor="middle">Two-mode dual-sketch design · host PC and Arduino Uno communicating over a USB serial link</text>
+<rect class="band" x="30" y="76" width="1740" height="26" rx="3"/><text class="band-text" x="45" y="90">Tier 1 · External Services (model-training infrastructure)</text>
+<path class="cloud" d="M 140.0 182 Q 120.0 182 125.0 154.0 Q 118.0 128 142.0 130 Q 150.0 114 230.0 122 Q 310.0 112 320.0 132 Q 344.0 136 332.0 154.0 Q 342.0 184 315.0 184 Q 230.0 196 140.0 182 Z"/><text class="t-cloud-b" x="230" y="137.0" text-anchor="middle">Roboflow</text>
+<text class="t-cloud" x="230" y="154.0" text-anchor="middle">247 images · 5 classes</text>
+<text class="t-cloud" x="230" y="171.0" text-anchor="middle">annotate · augment · export</text>
+<path class="cloud" d="M 625.0 182 Q 605.0 182 610.0 154.0 Q 603.0 128 627.0 130 Q 635.0 114 720.0 122 Q 805.0 112 815.0 132 Q 839.0 136 827.0 154.0 Q 837.0 184 810.0 184 Q 720.0 196 625.0 182 Z"/><text class="t-cloud-b" x="720" y="137.0" text-anchor="middle">Google Colab</text>
+<text class="t-cloud" x="720" y="154.0" text-anchor="middle">Tesla T4 GPU</text>
+<text class="t-cloud" x="720" y="171.0" text-anchor="middle">YOLOv11n · 50 epochs · 640 px</text>
+<path class="cloud" d="M 1140.0 182 Q 1120.0 182 1125.0 154.0 Q 1118.0 128 1142.0 130 Q 1150.0 114 1230.0 122 Q 1310.0 112 1320.0 132 Q 1344.0 136 1332.0 154.0 Q 1342.0 184 1315.0 184 Q 1230.0 196 1140.0 182 Z"/><text class="t-cloud-b" x="1230" y="137.0" text-anchor="middle">GitHub</text>
+<text class="t-cloud" x="1230" y="154.0" text-anchor="middle">source repository</text>
+<text class="t-cloud" x="1230" y="171.0" text-anchor="middle">github.com/PickMasters</text>
+<path class="arr" d="M 340 152 L 605 152" marker-end="url(#arrow)"/>
+<text class="annot" x="472" y="144" text-anchor="middle">labelled dataset</text>
+<path class="arr" d="M 720 192 L 720 240 L 560 240 L 560 288" marker-end="url(#arrow)"/>
+<text class="annot" x="640" y="232" text-anchor="middle">export best.pt</text>
+<path class="arrd" d="M 835 152 L 1120 152" marker-end="url(#arrowd)"/>
+<text class="annot" x="977" y="144" text-anchor="middle">archive model + code</text>
+<rect class="band" x="30" y="250" width="1740" height="26" rx="3"/><text class="band-text" x="45" y="264">Tier 2 · Persistent Storage and Configuration Files</text>
+<path class="store" d="M 465.0 297 A 95.0 9 0 0 1 655.0 297 L 655.0 365 A 95.0 9 0 0 1 465.0 365 Z"/><path d="M 465.0 297 A 95.0 9 0 0 0 655.0 297" fill="none" stroke="#993C1D" stroke-width="1.6"/><text class="t-store-b" x="560" y="319.5" text-anchor="middle">best.pt</text>
+<text class="t-store" x="560" y="335.5" text-anchor="middle">~5 MB · PyTorch</text>
+<text class="t-store" x="560" y="351.5" text-anchor="middle">YOLOv11n weights</text>
+<path class="store" d="M 730.0 297 A 100.0 9 0 0 1 930.0 297 L 930.0 365 A 100.0 9 0 0 1 730.0 365 Z"/><path d="M 730.0 297 A 100.0 9 0 0 0 930.0 297" fill="none" stroke="#993C1D" stroke-width="1.6"/><text class="t-store-b" x="830" y="319.5" text-anchor="middle">model_v2.pt</text>
+<text class="t-store" x="830" y="335.5" text-anchor="middle">deployment copy</text>
+<text class="t-store" x="830" y="351.5" text-anchor="middle">loaded by Python</text>
+<path class="store" d="M 1010.0 297 A 100.0 9 0 0 1 1210.0 297 L 1210.0 365 A 100.0 9 0 0 1 1010.0 365 Z"/><path d="M 1010.0 297 A 100.0 9 0 0 0 1210.0 297" fill="none" stroke="#993C1D" stroke-width="1.6"/><text class="t-store-b" x="1110" y="319.5" text-anchor="middle">PickMasters cfg</text>
+<text class="t-store" x="1110" y="335.5" text-anchor="middle">gamepad mapping</text>
+<text class="t-store" x="1110" y="351.5" text-anchor="middle">read by Processing</text>
+<path class="arrd" d="M 655 331 L 730 331" marker-end="url(#arrowd)"/>
+<text class="annot" x="692" y="323" text-anchor="middle">copy + rename</text>
+<rect class="band" x="30" y="384" width="1740" height="26" rx="3"/><text class="band-text" x="45" y="398">Tier 3 · Host PC Software   ·   Manual mode (left column)   |   Automatic mode (right column)</text>
+<line x1="900" y1="416" x2="900" y2="1470" stroke="#5F5E5A" stroke-width="0.8" stroke-dasharray="7 5"/>
+<text class="col-title" x="440" y="438" text-anchor="middle">DriveControl.pde · Processing · Manual mode</text>
+<rect class="terminator" x="370.0" y="452" width="140" height="38" rx="19.0"/><text class="t-term" x="440" y="471.0" text-anchor="middle">START</text>
+<path class="arr" d="M 440 490 L 440 506" marker-end="url(#arrow)"/>
+<polygon class="setup" points="282.0,506 598.0,506 620.0,535.0 598.0,564 282.0,564 260.0,535.0"/><text class="t-setup-b" x="440" y="518.0" text-anchor="middle">setup( )</text>
+<text class="t-setup" x="440" y="535.0" text-anchor="middle">init GameControlPlus · open serial @ 9600 baud</text>
+<text class="t-setup" x="440" y="552.0" text-anchor="middle">load PickMasters gamepad config</text>
+<path class="arr" d="M 440 564 L 440 592" marker-end="url(#arrow)"/>
+<polygon class="io" points="291.0,592 605.0,592 589.0,644 275.0,644"/><text class="t-io-b" x="440" y="609.5" text-anchor="middle">Read gamepad axes</text>
+<text class="t-io" x="440" y="626.5" text-anchor="middle">LeftX · LeftY · RightX · RightY · D-pad · buttons</text>
+<path class="arr" d="M 440 644 L 440 676" marker-end="url(#arrow)"/>
+<polygon class="decision" points="440,676 555.0,714.0 440,752 325.0,714.0"/><text class="t-dec-b" x="440" y="705.5" text-anchor="middle">| stick value |</text>
+<text class="t-dec-b" x="440" y="722.5" text-anchor="middle">≥ 0.9 ?</text>
+<path class="arrn" d="M 555 714 L 730 714 L 730 738" marker-end="url(#arrow)"/>
+<text class="lno" x="590" y="704" text-anchor="middle">NO</text>
+<rect class="process" x="655.0" y="738" width="150" height="40" rx="4"/><text class="t-proc-b" x="730" y="749.5" text-anchor="middle">in deadzone</text>
+<text class="t-proc" x="730" y="766.5" text-anchor="middle">(no command)</text>
+<path class="arry" d="M 440 752 L 440 786" marker-end="url(#arrow)"/>
+<text class="lyes" x="418" y="771" text-anchor="end">YES</text>
+<rect class="process" x="280.0" y="789" width="320" height="54" rx="4"/><text class="t-proc-b" x="440" y="807.5" text-anchor="middle">Map axes → joint angles</text>
+<text class="t-proc" x="440" y="824.5" text-anchor="middle">step shoulder / elbow on D-pad · wrist / hand on stick</text>
+<path class="arr" d="M 440 843 L 440 875" marker-end="url(#arrow)"/>
+<rect class="predef" x="290.0" y="875" width="300" height="50" rx="4"/><line x1="300.0" y1="875" x2="300.0" y2="925" stroke="#534AB7" stroke-width="1.6"/><line x1="580.0" y1="875" x2="580.0" y2="925" stroke="#534AB7" stroke-width="1.6"/><text class="t-pred-b" x="440" y="891.5" text-anchor="middle">computeChecksum( )</text>
+<text class="t-pred" x="440" y="908.5" text-anchor="middle">XOR over all command bytes</text>
+<path class="arr" d="M 440 925 L 440 961" marker-end="url(#arrow)"/>
+<polygon class="io" points="266.0,961 630.0,961 614.0,1025 250.0,1025"/><text class="t-io-b" x="440" y="984.5" text-anchor="middle">Serial send (throttled 50 ms)</text>
+<text class="t-io" x="440" y="1001.5" text-anchor="middle">S&lt;sh&gt;,&lt;el&gt;,&lt;wr&gt;,&lt;ha&gt;,M&lt;L&gt;,&lt;R&gt;,P,W*&lt;XX&gt;</text>
+<path class="arrd" d="M 260 993 L 230 993 L 230 618 L 275 618" marker-end="url(#arrowd)"/>
+<text class="annot" x="218" y="800" text-anchor="middle" transform="rotate(-90 218 800)">main loop · 50 Hz</text>
+<text class="col-title" x="1320" y="438" text-anchor="middle">detect_and_move.py · Python · Automatic mode</text>
+<rect class="terminator" x="1250.0" y="452" width="140" height="38" rx="19.0"/><text class="t-term" x="1320" y="471.0" text-anchor="middle">START</text>
+<path class="arr" d="M 1320 490 L 1320 506" marker-end="url(#arrow)"/>
+<polygon class="setup" points="1162.0,506 1478.0,506 1500.0,535.0 1478.0,564 1162.0,564 1140.0,535.0"/><text class="t-setup-b" x="1320" y="518.0" text-anchor="middle">setup( )</text>
+<text class="t-setup" x="1320" y="535.0" text-anchor="middle">load model_v2.pt · open camera (DirectShow)</text>
+<text class="t-setup" x="1320" y="552.0" text-anchor="middle">open serial @ 9600 baud</text>
+<path class="arr" d="M 1320 564 L 1320 592" marker-end="url(#arrow)"/>
+<polygon class="io" points="1186.0,592 1470.0,592 1454.0,644 1170.0,644"/><text class="t-io-b" x="1320" y="609.5" text-anchor="middle">cap.read( ) → frame</text>
+<text class="t-io" x="1320" y="626.5" text-anchor="middle">640 × 480 BGR · 30 fps</text>
+<path class="arr" d="M 1320 644 L 1320 676" marker-end="url(#arrow)"/>
+<rect class="predef" x="1155.0" y="676" width="330" height="52" rx="4"/><line x1="1165.0" y1="676" x2="1165.0" y2="728" stroke="#534AB7" stroke-width="1.6"/><line x1="1475.0" y1="676" x2="1475.0" y2="728" stroke="#534AB7" stroke-width="1.6"/><text class="t-pred-b" x="1320" y="693.5" text-anchor="middle">model.track(frame, persist=True)</text>
+<text class="t-pred" x="1320" y="710.5" text-anchor="middle">YOLOv11 inference + object tracker</text>
+<path class="arr" d="M 1320 728 L 1320 762" marker-end="url(#arrow)"/>
+<polygon class="decision" points="1320,762 1445.0,800.0 1320,838 1195.0,800.0"/><text class="t-dec-b" x="1320" y="791.5" text-anchor="middle">any detection with</text>
+<text class="t-dec-b" x="1320" y="808.5" text-anchor="middle">confidence ≥ 0.5 ?</text>
+<path class="arrn" d="M 1445 800 L 1570 800 L 1570 852" marker-end="url(#arrow)"/>
+<text class="lno" x="1480" y="790" text-anchor="middle">NO</text>
+<polygon class="io" points="1516.0,852 1640.0,852 1624.0,892 1500.0,892"/><text class="t-io-b" x="1570" y="872.0" text-anchor="middle">send "STOP"</text>
+<path class="arry" d="M 1320 838 L 1320 868" marker-end="url(#arrow)"/>
+<text class="lyes" x="1298" y="857" text-anchor="end">YES</text>
+<rect class="process" x="1200.0" y="871" width="240" height="50" rx="4"/><text class="t-proc-b" x="1320" y="887.5" text-anchor="middle">Lock onto target.id</text>
+<text class="t-proc" x="1320" y="904.5" text-anchor="middle">persist across frames</text>
+<path class="arr" d="M 1320 921 L 1320 951" marker-end="url(#arrow)"/>
+<rect class="process" x="1180.0" y="951" width="280" height="50" rx="4"/><text class="t-proc-b" x="1320" y="967.5" text-anchor="middle">Compute err_x , err_y</text>
+<text class="t-proc" x="1320" y="984.5" text-anchor="middle">(target-box centre − object centre)</text>
+<path class="arr" d="M 1320 1001 L 1320 1033" marker-end="url(#arrow)"/>
+<polygon class="decision" points="1320,1033 1440.0,1071.0 1320,1109 1200.0,1071.0"/><text class="t-dec-b" x="1320" y="1062.5" text-anchor="middle">bounding box fully</text>
+<text class="t-dec-b" x="1320" y="1079.5" text-anchor="middle">inside target box ?</text>
+<path class="arry" d="M 1440 1071 L 1570 1071 L 1570 1123" marker-end="url(#arrow)"/>
+<text class="lyes" x="1480" y="1061" text-anchor="middle">YES</text>
+<rect class="terminator" x="1505.0" y="1123" width="130" height="38" rx="19.0"/><text class="t-term" x="1570" y="1142.0" text-anchor="middle">DONE</text>
+<path class="arrn" d="M 1320 1109 L 1320 1143" marker-end="url(#arrow)"/>
+<text class="lno" x="1298" y="1128" text-anchor="end">NO</text>
+<polygon class="decision" points="1320,1146 1430.0,1181.0 1320,1216 1210.0,1181.0"/><text class="t-dec-b" x="1320" y="1181.0" text-anchor="middle">| err_x | > 30 px ?</text>
+<path class="arry" d="M 1210 1181 L 1070 1181 L 1070 1224" marker-end="url(#arrow)"/>
+<text class="lyes" x="1160" y="1171" text-anchor="middle">YES</text>
+<polygon class="io" points="981.0,1224 1175.0,1224 1159.0,1276 965.0,1276"/><text class="t-io-b" x="1070" y="1241.5" text-anchor="middle">send</text>
+<text class="t-io-b" x="1070" y="1258.5" text-anchor="middle">FUZZY_PIVOT err_x</text>
+<path class="arrn" d="M 1430 1181 L 1460 1181 L 1460 1224" marker-end="url(#arrow)"/>
+<text class="lno" x="1448" y="1168" text-anchor="middle">NO</text>
+<polygon class="decision" points="1460,1224 1565.0,1259.0 1460,1294 1355.0,1259.0"/><text class="t-dec-b" x="1460" y="1259.0" text-anchor="middle">| err_y | > 30 px ?</text>
+<path class="arry" d="M 1565 1259 L 1660 1259 L 1660 1322" marker-end="url(#arrow)"/>
+<text class="lyes" x="1625" y="1249" text-anchor="middle">YES</text>
+<polygon class="io" points="1576.0,1322 1760.0,1322 1744.0,1374 1560.0,1374"/><text class="t-io-b" x="1660" y="1339.5" text-anchor="middle">send</text>
+<text class="t-io-b" x="1660" y="1356.5" text-anchor="middle">FUZZY_DRIVE err_y</text>
+<path class="arrn" d="M 1460 1294 L 1460 1344" marker-end="url(#arrow)"/>
+<text class="lno" x="1488" y="1319" text-anchor="start">NO</text>
+<rect class="process" x="1385.0" y="1344" width="150" height="40" rx="4"/><text class="t-proc-b" x="1460" y="1355.5" text-anchor="middle">CENTERING…</text>
+<text class="t-proc" x="1460" y="1372.5" text-anchor="middle">(no command)</text>
+<path class="arr" d="M 1070 1276 L 1070 1410 L 1320 1410" marker-end="url(#arrow)"/>
+<path class="arr" d="M 1660 1374 L 1660 1410 L 1320 1410" marker-end="url(#arrow)"/>
+<path class="arrd" d="M 1385 1364 L 960 1364 L 960 618 L 1155 618" marker-end="url(#arrowd)"/>
+<text class="annot" x="948" y="1000" text-anchor="middle" transform="rotate(-90 948 1000)">main loop · ~15 fps</text>
+<path class="arrpwr" d="M 830 374 L 830 414 L 1758 414 L 1758 535 L 1502 535" marker-end="url(#arrow)"/>
+<text class="annot" x="1750" y="470" text-anchor="end">load weights</text>
+<path class="arrpwr" d="M 1110 374 L 1110 426 L 42 426 L 42 535 L 258 535" marker-end="url(#arrow)"/>
+<text class="annot" x="54" y="470" text-anchor="start">load gamepad config</text>
+<rect x="30" y="1490" width="1740" height="66" rx="6" fill="#2C3E50" stroke="#0D1B3E" stroke-width="2"/>
+<text x="900.0" y="1516" text-anchor="middle" font-size="16" font-weight="bold" fill="#FFFFFF">Tier 4 · USB Serial Link · 9600 baud · line-oriented, newline-terminated protocol</text>
+<text x="900.0" y="1538" text-anchor="middle" font-size="12" fill="#C8E6F5" font-style="italic">Manual: S&lt;angles&gt;,M&lt;motors&gt;,P,W*XX        Automatic: FUZZY_PIVOT err  /  FUZZY_DRIVE err  /  STOP</text>
+<path class="arr" d="M 440 1025 L 440 1490" marker-end="url(#arrow)"/>
+<text class="annot" x="458" y="1257.5" text-anchor="start">commands</text>
+<path class="arr" d="M 1320 1410 L 1320 1490" marker-end="url(#arrow)"/>
+<text class="annot" x="1338" y="1450.0" text-anchor="start">commands</text>
+<rect class="band" x="30" y="1566" width="1740" height="26" rx="3"/><text class="band-text" x="45" y="1580">Tier 5 · Arduino Uno (Atmega328P) Firmware   ·   one Arduino, two sketches, reflashed when the mode changes</text>
+<line x1="900" y1="1598" x2="900" y2="2300" stroke="#5F5E5A" stroke-width="0.8" stroke-dasharray="7 5"/>
+<text class="col-title" x="440" y="1620" text-anchor="middle">ArmController.ino · Manual-mode firmware</text>
+<polygon class="setup" points="272.0,1634 608.0,1634 630.0,1666.0 608.0,1698 272.0,1698 250.0,1666.0"/><text class="t-setup-b" x="440" y="1649.0" text-anchor="middle">setup( )</text>
+<text class="t-setup" x="440" y="1666.0" text-anchor="middle">attach 4 servos · init L298N · I²C · wdt_enable(2 s)</text>
+<text class="t-setup" x="440" y="1683.0" text-anchor="middle">PUMP pin HIGH (off) · calibrateIMU( )</text>
+<path class="arr" d="M 440 1698 L 440 1722" marker-end="url(#arrow)"/>
+<rect class="process" x="360.0" y="1722" width="160" height="38" rx="4"/><text class="t-proc-b" x="440" y="1741.0" text-anchor="middle">wdt_reset( )</text>
+<path class="arr" d="M 440 1760 L 440 1782" marker-end="url(#arrow)"/>
+<polygon class="io" points="356.0,1782 540.0,1782 524.0,1822 340.0,1822"/><text class="t-io-b" x="440" y="1802.0" text-anchor="middle">read serial buffer</text>
+<path class="arr" d="M 440 1822 L 440 1844" marker-end="url(#arrow)"/>
+<rect class="predef" x="330.0" y="1844" width="220" height="40" rx="4"/><line x1="340.0" y1="1844" x2="340.0" y2="1884" stroke="#534AB7" stroke-width="1.6"/><line x1="540.0" y1="1844" x2="540.0" y2="1884" stroke="#534AB7" stroke-width="1.6"/><text class="t-pred-b" x="440" y="1864.0" text-anchor="middle">verifyChecksum( )</text>
+<path class="arr" d="M 440 1884 L 440 1906" marker-end="url(#arrow)"/>
+<polygon class="decision" points="440,1906 540.0,1937.0 440,1968 340.0,1937.0"/><text class="t-dec-b" x="440" y="1937.0" text-anchor="middle">XOR match ?</text>
+<path class="arrn" d="M 540 1937 L 660 1937 L 660 1980" marker-end="url(#arrow)"/>
+<text class="lno" x="575" y="1927" text-anchor="middle">NO</text>
+<polygon class="io" points="606.0,1980 730.0,1980 714.0,2020 590.0,2020"/><text class="t-io-b" x="660" y="2000.0" text-anchor="middle">send ERR</text>
+<path class="arry" d="M 440 1968 L 440 2000" marker-end="url(#arrow)"/>
+<text class="lyes" x="418" y="1984" text-anchor="end">YES</text>
+<rect class="predef" x="330.0" y="2003" width="220" height="40" rx="4"/><line x1="340.0" y1="2003" x2="340.0" y2="2043" stroke="#534AB7" stroke-width="1.6"/><line x1="540.0" y1="2003" x2="540.0" y2="2043" stroke="#534AB7" stroke-width="1.6"/><text class="t-pred-b" x="440" y="2023.0" text-anchor="middle">parseCommand( )</text>
+<path class="arr" d="M 440 2043 L 440 2065" marker-end="url(#arrow)"/>
+<rect class="predef" x="290.0" y="2065" width="300" height="52" rx="4"/><line x1="300.0" y1="2065" x2="300.0" y2="2117" stroke="#534AB7" stroke-width="1.6"/><line x1="580.0" y1="2065" x2="580.0" y2="2117" stroke="#534AB7" stroke-width="1.6"/><text class="t-pred-b" x="440" y="2082.5" text-anchor="middle">updateSafetyInterlock( )</text>
+<text class="t-pred" x="440" y="2099.5" text-anchor="middle">A0 AND serial-alive AND IMU-ok</text>
+<path class="arr" d="M 440 2117 L 440 2149" marker-end="url(#arrow)"/>
+<polygon class="decision" points="440,2149 540.0,2180.0 440,2211 340.0,2180.0"/><text class="t-dec-b" x="440" y="2180.0" text-anchor="middle">safetyClear ?</text>
+<path class="arrn" d="M 540 2180 L 760 2180 L 760 2204" marker-end="url(#arrow)"/>
+<text class="lno" x="575" y="2170" text-anchor="middle">NO</text>
+<rect class="process" x="680.0" y="2204" width="160" height="50" rx="4"/><text class="t-proc-b" x="760" y="2220.5" text-anchor="middle">motors = 0</text>
+<text class="t-proc" x="760" y="2237.5" text-anchor="middle">pump = OFF</text>
+<path class="arry" d="M 440 2211 L 440 2245" marker-end="url(#arrow)"/>
+<text class="lyes" x="418" y="2227" text-anchor="end">YES</text>
+<polygon class="io" points="276.0,2248 620.0,2248 604.0,2312 260.0,2312"/><text class="t-io-b" x="440" y="2263.0" text-anchor="middle">apply outputs</text>
+<text class="t-io" x="440" y="2280.0" text-anchor="middle">servoWrite × 4 · setMotorL / R · pump</text>
+<text class="t-io" x="440" y="2297.0" text-anchor="middle">pidCompute( ) → wrist servo</text>
+<path class="arrd" d="M 260 2280 L 200 2280 L 200 1741 L 360 1741" marker-end="url(#arrowd)"/>
+<text class="annot" x="188" y="2000" text-anchor="middle" transform="rotate(-90 188 2000)">main loop · 50 Hz</text>
+<text class="col-title" x="1320" y="1620" text-anchor="middle">PickAndMove.ino · Auto-mode firmware</text>
+<polygon class="setup" points="1182.0,1634 1458.0,1634 1480.0,1666.0 1458.0,1698 1182.0,1698 1160.0,1666.0"/><text class="t-setup-b" x="1320" y="1649.0" text-anchor="middle">setup( )</text>
+<text class="t-setup" x="1320" y="1666.0" text-anchor="middle">init L298N · stopMotors( )</text>
+<text class="t-setup" x="1320" y="1683.0" text-anchor="middle">wdt_enable(2 s)</text>
+<path class="arr" d="M 1320 1698 L 1320 1722" marker-end="url(#arrow)"/>
+<rect class="process" x="1240.0" y="1722" width="160" height="38" rx="4"/><text class="t-proc-b" x="1320" y="1741.0" text-anchor="middle">wdt_reset( )</text>
+<path class="arr" d="M 1320 1760 L 1320 1782" marker-end="url(#arrow)"/>
+<polygon class="io" points="1236.0,1782 1420.0,1782 1404.0,1822 1220.0,1822"/><text class="t-io-b" x="1320" y="1802.0" text-anchor="middle">read serial line</text>
+<path class="arr" d="M 1320 1822 L 1320 1844" marker-end="url(#arrow)"/>
+<polygon class="decision" points="1320,1844 1460.0,1879.0 1320,1914 1180.0,1879.0"/><text class="t-dec-b" x="1320" y="1870.5" text-anchor="middle">command type ?</text>
+<text class="t-dec" x="1320" y="1887.5" text-anchor="middle">FUZZY · PIVOT · DRIVE · STOP</text>
+<path class="arry" d="M 1180 1879 L 1090 1879 L 1090 1922" marker-end="url(#arrow)"/>
+<text class="lyes" x="1135.0" y="1869" text-anchor="middle">FUZZY_*</text>
+<rect class="predef" x="980.0" y="1922" width="220" height="64" rx="4"/><line x1="990.0" y1="1922" x2="990.0" y2="1986" stroke="#534AB7" stroke-width="1.6"/><line x1="1190.0" y1="1922" x2="1190.0" y2="1986" stroke="#534AB7" stroke-width="1.6"/><text class="t-pred-b" x="1090" y="1937.0" text-anchor="middle">fuzzyComputeSpeed( )</text>
+<text class="t-pred" x="1090" y="1954.0" text-anchor="middle">3 trapezoidal MFs</text>
+<text class="t-pred" x="1090" y="1971.0" text-anchor="middle">centre-of-gravity defuzz</text>
+<path class="arrn" d="M 1460 1879 L 1600 1879 L 1600 1922" marker-end="url(#arrow)"/>
+<text class="lno" x="1525" y="1869" text-anchor="middle">STOP</text>
+<rect class="process" x="1525.0" y="1922" width="150" height="40" rx="4"/><text class="t-proc-b" x="1600" y="1942.0" text-anchor="middle">stopMotors( )</text>
+<path class="arr" d="M 1090 1986 L 1090 2016" marker-end="url(#arrow)"/>
+<rect class="process" x="990.0" y="2016" width="200" height="50" rx="4"/><text class="t-proc-b" x="1090" y="2032.5" text-anchor="middle">setMotors(dir, speed)</text>
+<text class="t-proc" x="1090" y="2049.5" text-anchor="middle">startPulse(70 ms)</text>
+<path class="arr" d="M 1090 2066 L 1090 2096" marker-end="url(#arrow)"/>
+<polygon class="decision" points="1090,2096 1190.0,2127.0 1090,2158 990.0,2127.0"/><text class="t-dec-b" x="1090" y="2127.0" text-anchor="middle">pulse expired ?</text>
+<path class="arry" d="M 1190 2127 L 1320 2127 L 1320 2170" marker-end="url(#arrow)"/>
+<text class="lyes" x="1250" y="2117" text-anchor="middle">YES</text>
+<rect class="process" x="1245.0" y="2170" width="150" height="40" rx="4"/><text class="t-proc-b" x="1320" y="2190.0" text-anchor="middle">stopMotors( )</text>
+<path class="arrn" d="M 1090 2158 L 1090 2194" marker-end="url(#arrow)"/>
+<text class="lno" x="1112" y="2176" text-anchor="start">NO</text>
+<rect class="process" x="1010.0" y="2194" width="160" height="40" rx="4"/><text class="t-proc-b" x="1090" y="2214.0" text-anchor="middle">keep running pulse</text>
+<path class="arrd" d="M 980 1954 L 960 1954 L 960 1741 L 1240 1741" marker-end="url(#arrowd)"/>
+<text class="annot" x="948" y="1860" text-anchor="middle" transform="rotate(-90 948 1860)">main loop</text>
+<rect class="band" x="30" y="2330" width="1740" height="26" rx="3"/><text class="band-text" x="45" y="2344">Tier 6 · Physical Hardware (sensors and actuators)</text>
+<rect class="hw" x="60.0" y="2366" width="180" height="54" rx="4"/><text class="t-hw-b" x="150" y="2376.0" text-anchor="middle">MPU6050 IMU</text>
+<text class="t-hw" x="150" y="2393.0" text-anchor="middle">I²C · A4 / A5</text>
+<text class="t-hw" x="150" y="2410.0" text-anchor="middle">pitch sensor</text>
+<rect class="hw" x="260.0" y="2366" width="200" height="54" rx="4"/><text class="t-hw-b" x="360" y="2376.0" text-anchor="middle">4× MG996R servos</text>
+<text class="t-hw" x="360" y="2393.0" text-anchor="middle">D9–D12 PWM</text>
+<text class="t-hw" x="360" y="2410.0" text-anchor="middle">shoulder·elbow·wrist·hand</text>
+<rect class="hw" x="500.0" y="2366" width="180" height="54" rx="4"/><text class="t-hw-b" x="590" y="2376.0" text-anchor="middle">L298N driver</text>
+<text class="t-hw" x="590" y="2393.0" text-anchor="middle">D2/D4/D5/D6/D7/D8</text>
+<text class="t-hw" x="590" y="2410.0" text-anchor="middle">2× DC motors</text>
+<rect class="hw" x="715.0" y="2366" width="170" height="54" rx="4"/><text class="t-hw-b" x="800" y="2376.0" text-anchor="middle">Pump relay</text>
+<text class="t-hw" x="800" y="2393.0" text-anchor="middle">D3 active-LOW</text>
+<text class="t-hw" x="800" y="2410.0" text-anchor="middle">12 V vacuum pump</text>
+<rect class="hw" x="920.0" y="2366" width="160" height="54" rx="4"/><text class="t-hw-b" x="1000" y="2376.0" text-anchor="middle">Safety pin</text>
+<text class="t-hw" x="1000" y="2393.0" text-anchor="middle">A0 input</text>
+<text class="t-hw" x="1000" y="2410.0" text-anchor="middle">e-stop switch</text>
+<rect class="hw" x="1100.0" y="2366" width="180" height="54" rx="4"/><text class="t-hw-b" x="1190" y="2376.0" text-anchor="middle">USB webcam</text>
+<text class="t-hw" x="1190" y="2393.0" text-anchor="middle">mounted on arm base</text>
+<text class="t-hw" x="1190" y="2410.0" text-anchor="middle">640×480 @ 30 fps</text>
+<rect class="hw" x="1310.0" y="2366" width="160" height="54" rx="4"/><text class="t-hw-b" x="1390" y="2376.0" text-anchor="middle">BT gamepad</text>
+<text class="t-hw" x="1390" y="2393.0" text-anchor="middle">manual input</text>
+<text class="t-hw" x="1390" y="2410.0" text-anchor="middle">XINPUT</text>
+<rect x="1495" y="2366" width="285" height="120" rx="5" fill="#F4F6F9" stroke="#5F5E5A" stroke-width="0.8"/>
+<text x="1507" y="2382" font-size="12" font-weight="bold" fill="#0D1B3E">Shape legend (ANSI flowchart)</text>
+<rect class="terminator" x="1509" y="2392" width="16" height="11" rx="2"/>
+<text x="1531" y="2398" font-size="9.5" fill="#2C3E50">start / end</text>
+<rect class="setup" x="1509" y="2412" width="16" height="11" rx="2"/>
+<text x="1531" y="2418" font-size="9.5" fill="#2C3E50">hexagon: prep</text>
+<rect class="process" x="1509" y="2432" width="16" height="11" rx="2"/>
+<text x="1531" y="2438" font-size="9.5" fill="#2C3E50">rect: process</text>
+<rect class="predef" x="1509" y="2452" width="16" height="11" rx="2"/>
+<text x="1531" y="2458" font-size="9.5" fill="#2C3E50">bars: function</text>
+<rect class="decision" x="1649" y="2392" width="16" height="11" rx="2"/>
+<text x="1671" y="2398" font-size="9.5" fill="#2C3E50">diamond: decision</text>
+<rect class="io" x="1649" y="2412" width="16" height="11" rx="2"/>
+<text x="1671" y="2418" font-size="9.5" fill="#2C3E50">skew: I / O</text>
+<rect class="store" x="1649" y="2432" width="16" height="11" rx="2"/>
+<text x="1671" y="2438" font-size="9.5" fill="#2C3E50">cylinder: data</text>
+<rect class="cloud" x="1649" y="2452" width="16" height="11" rx="2"/>
+<text x="1671" y="2458" font-size="9.5" fill="#2C3E50">cloud: external</text>
+</svg>
