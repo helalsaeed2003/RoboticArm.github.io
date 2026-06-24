@@ -21,29 +21,27 @@ Detection-only script without motor control. Loads the YOLOv11n model, opens the
 <details>
 <summary>Python 3 | 108 lines</summary>
 <div class="code-scroll">
-
-```python
-import cv2
+<pre><code>import cv2
 from ultralytics import YOLO
 import serial
 import time
 
-model = YOLO("model_v2.pt")
+model = YOLO(&quot;model_v2.pt&quot;)
 cap = cv2.VideoCapture(1, cv2.CAP_DSHOW)
 
 cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
 cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
 
 if not cap.isOpened():
-    print("Error: Could not open camera")
+    print(&quot;Error: Could not open camera&quot;)
     exit()
 
 try:
-    arduino = serial.Serial("COM10", 9600, timeout=1)
+    arduino = serial.Serial(&quot;COM10&quot;, 9600, timeout=1)
     time.sleep(2)
-    print("Arduino connected!")
+    print(&quot;Arduino connected!&quot;)
 except:
-    print("Arduino not found")
+    print(&quot;Arduino not found&quot;)
     arduino = None
 
 FRAME_WIDTH = 640
@@ -64,7 +62,7 @@ while True:
     cv2.line(annotated, (0, CENTER_Y), (FRAME_WIDTH, CENTER_Y), (255, 0, 0), 2)
 
     boxes = results[0].boxes
-    if boxes is not None and len(boxes) > 0:
+    if boxes is not None and len(boxes) &gt; 0:
         best_idx = boxes.conf.argmax()
         best_box = boxes[best_idx]
         x1, y1, x2, y2 = map(int, best_box.xyxy[0])
@@ -81,57 +79,55 @@ while True:
         error_y = CENTER_Y - obj_cy
 
         command = None
-        status = ""
+        status = &quot;&quot;
 
-        if abs(error_x) > DEAD_ZONE:
-            if error_x > 0:
-                command = f"PIVOT_RIGHT {min(abs(error_x), 200)}"
-                status = f"PIVOT RIGHT (err={error_x})"
+        if abs(error_x) &gt; DEAD_ZONE:
+            if error_x &gt; 0:
+                command = f&quot;PIVOT_RIGHT {min(abs(error_x), 200)}&quot;
+                status = f&quot;PIVOT RIGHT (err={error_x})&quot;
             else:
-                command = f"PIVOT_LEFT {min(abs(error_x), 200)}"
-                status = f"PIVOT LEFT (err={error_x})"
-        elif abs(error_y) > DEAD_ZONE:
-            if error_y > 0:
-                command = f"DRIVE_FWD {min(abs(error_y), 200)}"
-                status = f"DRIVE FWD (err={error_y})"
+                command = f&quot;PIVOT_LEFT {min(abs(error_x), 200)}&quot;
+                status = f&quot;PIVOT LEFT (err={error_x})&quot;
+        elif abs(error_y) &gt; DEAD_ZONE:
+            if error_y &gt; 0:
+                command = f&quot;DRIVE_FWD {min(abs(error_y), 200)}&quot;
+                status = f&quot;DRIVE FWD (err={error_y})&quot;
             else:
-                command = f"DRIVE_BACK {min(abs(error_y), 200)}"
-                status = f"DRIVE BACK (err={error_y})"
+                command = f&quot;DRIVE_BACK {min(abs(error_y), 200)}&quot;
+                status = f&quot;DRIVE BACK (err={error_y})&quot;
         else:
-            command = "STOP"
-            status = f"CENTERED on {class_name}"
+            command = &quot;STOP&quot;
+            status = f&quot;CENTERED on {class_name}&quot;
 
-        color = (0, 255, 0) if command == "STOP" else (0, 255, 255)
+        color = (0, 255, 0) if command == &quot;STOP&quot; else (0, 255, 255)
         cv2.putText(annotated, status, (10, 30),
                     cv2.FONT_HERSHEY_SIMPLEX, 0.7, color, 2)
-        cv2.putText(annotated, f"{class_name} ({confidence:.2f})",
+        cv2.putText(annotated, f&quot;{class_name} ({confidence:.2f})&quot;,
                     (10, 60), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2)
 
         if command and arduino:
             try:
-                arduino.write((command + "\n").encode())
-                print(f"Sent: {command}")
+                arduino.write((command + &quot;\n&quot;).encode())
+                print(f&quot;Sent: {command}&quot;)
             except:
                 pass
     else:
-        cv2.putText(annotated, "No object detected", (10, 30),
+        cv2.putText(annotated, &quot;No object detected&quot;, (10, 30),
                     cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
         if arduino:
             try:
-                arduino.write(b"STOP\n")
+                arduino.write(b&quot;STOP\n&quot;)
             except:
                 pass
 
-    cv2.imshow("Pick & Move Detection", annotated)
-    if cv2.waitKey(1) & 0xFF == ord('q'):
+    cv2.imshow(&quot;Pick &amp; Move Detection&quot;, annotated)
+    if cv2.waitKey(1) &amp; 0xFF == ord(&#x27;q&#x27;):
         break
 
 cap.release()
 cv2.destroyAllWindows()
 if arduino:
-    arduino.close()
-```
-
+    arduino.close()</code></pre>
 </div>
 </details>
 
@@ -144,9 +140,7 @@ Simple webcam capture utility. Opens the camera, displays a live feed, and saves
 <details>
 <summary>Python 3 | 16 lines</summary>
 <div class="code-scroll">
-
-```python
-import cv2
+<pre><code>import cv2
 
 cap = cv2.VideoCapture(1)
 
@@ -155,15 +149,13 @@ while True:
     if not ret:
         break
 
-    cv2.imshow("Webcam", frame)
-    key = cv2.waitKey(1) & 0xFF
-    if key == ord('q'):
+    cv2.imshow(&quot;Webcam&quot;, frame)
+    key = cv2.waitKey(1) &amp; 0xFF
+    if key == ord(&#x27;q&#x27;):
         break
 
 cap.release()
-cv2.destroyAllWindows()
-```
-
+cv2.destroyAllWindows()</code></pre>
 </div>
 </details>
 
