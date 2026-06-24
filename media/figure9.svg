@@ -1,0 +1,224 @@
+<svg width="800" height="780" viewBox="0 0 800 780" xmlns="http://www.w3.org/2000/svg" font-family="Arial, sans-serif">
+<defs>
+<marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+<path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+</marker>
+<style>
+.wire-pos { stroke: #C0392B; stroke-width: 2; fill: none; }
+.wire-neg { stroke: #2C3E50; stroke-width: 2; fill: none; }
+.wire-sig { stroke: #028090; stroke-width: 1.5; fill: none; stroke-dasharray: 5 3; }
+.box { fill: #FFFFFF; stroke: #2C3E50; stroke-width: 1.5; }
+.box-pwr { fill: #FAECE7; stroke: #C0392B; stroke-width: 1.5; }
+.label { font-size: 12px; fill: #2C3E50; }
+.label-sm { font-size: 11px; fill: #2C3E50; }
+.label-bold { font-size: 13px; font-weight: bold; fill: #2C3E50; }
+.label-pwr { font-size: 12px; fill: #C0392B; font-weight: bold; }
+.label-sig { font-size: 11px; fill: #028090; font-style: italic; }
+.rail-title { font-size: 15px; font-weight: bold; fill: #0D1B3E; }
+.title { font-size: 17px; font-weight: bold; fill: #0D1B3E; }
+</style>
+</defs>
+
+<rect width="800" height="780" fill="#FFFFFF"/>
+<text class="title" x="400" y="32" text-anchor="middle">Power distribution schematic — two independent rails</text>
+
+<!-- ============================================================ -->
+<!--  LEFT — SERVO RAIL                                           -->
+<!-- ============================================================ -->
+<rect x="30" y="55" width="370" height="710" rx="10" fill="#E1F5EE" stroke="#0F6E56" stroke-width="1" opacity="0.35"/>
+<text class="rail-title" x="215" y="80" text-anchor="middle">Servo rail · 6 V regulated</text>
+
+<!-- Battery pack (4× 18650) -->
+<rect x="60" y="100" width="290" height="130" rx="6" class="box-pwr"/>
+<text class="label-bold" x="205" y="120" text-anchor="middle">Battery pack — 4 × 18650 Li-ion (series)</text>
+
+<g transform="translate(80,135)">
+  <rect width="50" height="45" fill="#FFFFFF" stroke="#C0392B" stroke-width="1.2"/>
+  <text x="25" y="22" text-anchor="middle" font-size="10" fill="#C0392B" font-weight="bold">18650</text>
+  <text x="25" y="36" text-anchor="middle" font-size="9" fill="#5F5E5A">3.7 V</text>
+</g>
+<g transform="translate(140,135)">
+  <rect width="50" height="45" fill="#FFFFFF" stroke="#C0392B" stroke-width="1.2"/>
+  <text x="25" y="22" text-anchor="middle" font-size="10" fill="#C0392B" font-weight="bold">18650</text>
+  <text x="25" y="36" text-anchor="middle" font-size="9" fill="#5F5E5A">3.7 V</text>
+</g>
+<g transform="translate(200,135)">
+  <rect width="50" height="45" fill="#FFFFFF" stroke="#C0392B" stroke-width="1.2"/>
+  <text x="25" y="22" text-anchor="middle" font-size="10" fill="#C0392B" font-weight="bold">18650</text>
+  <text x="25" y="36" text-anchor="middle" font-size="9" fill="#5F5E5A">3.7 V</text>
+</g>
+<g transform="translate(260,135)">
+  <rect width="50" height="45" fill="#FFFFFF" stroke="#C0392B" stroke-width="1.2"/>
+  <text x="25" y="22" text-anchor="middle" font-size="10" fill="#C0392B" font-weight="bold">18650</text>
+  <text x="25" y="36" text-anchor="middle" font-size="9" fill="#5F5E5A">3.7 V</text>
+</g>
+
+<text class="label-sm" x="205" y="200" text-anchor="middle">Nominal output ≈ 14.8 V · Capacity ~3000 mAh/cell</text>
+<text class="label-sm" x="205" y="217" text-anchor="middle" font-weight="bold">SW1 — main power switch wired in series with pack</text>
+
+<!-- Wires from battery to buck (+ on left, − on right) -->
+<path d="M 95 230 L 95 270" class="wire-pos"/>
+<path d="M 315 230 L 315 270" class="wire-neg"/>
+<text class="label-pwr" x="105" y="252">+14.8 V</text>
+<text class="label" x="295" y="252" text-anchor="end">GND</text>
+
+<!-- Buck converter -->
+<rect x="60" y="270" width="290" height="80" rx="6" class="box"/>
+<text class="label-bold" x="205" y="293" text-anchor="middle">Buck converter (XL4015)</text>
+<text class="label" x="205" y="313" text-anchor="middle">Input 14.8 V  →  Output 6.0 V regulated</text>
+<text class="label-sm" x="205" y="333" text-anchor="middle">Output trimmed via multi-turn potentiometer</text>
+
+<!-- Wires from buck output to capacitor bank -->
+<path d="M 95 350 L 95 385" class="wire-pos"/>
+<path d="M 315 350 L 315 385" class="wire-neg"/>
+<text class="label-pwr" x="105" y="372">+6 V</text>
+
+<!-- Capacitor bank -->
+<rect x="60" y="385" width="290" height="125" rx="6" class="box"/>
+<text class="label-bold" x="205" y="405" text-anchor="middle">Decoupling capacitor bank</text>
+<text class="label-sm" x="205" y="423" text-anchor="middle">2 × 2200 µF electrolytic, in parallel across rail</text>
+
+<!-- Capacitor C1 -->
+<g transform="translate(140,448)">
+  <line x1="0" y1="-15" x2="0" y2="-5" stroke="#C0392B" stroke-width="2"/>
+  <line x1="-14" y1="-5" x2="14" y2="-5" stroke="#C0392B" stroke-width="3"/>
+  <line x1="-14" y1="5" x2="14" y2="5" stroke="#2C3E50" stroke-width="3"/>
+  <line x1="0" y1="5" x2="0" y2="15" stroke="#2C3E50" stroke-width="2"/>
+  <text x="0" y="35" text-anchor="middle" font-size="10" fill="#5F5E5A" font-weight="bold">C1 · 2200 µF</text>
+</g>
+<!-- Capacitor C2 -->
+<g transform="translate(265,448)">
+  <line x1="0" y1="-15" x2="0" y2="-5" stroke="#C0392B" stroke-width="2"/>
+  <line x1="-14" y1="-5" x2="14" y2="-5" stroke="#C0392B" stroke-width="3"/>
+  <line x1="-14" y1="5" x2="14" y2="5" stroke="#2C3E50" stroke-width="3"/>
+  <line x1="0" y1="5" x2="0" y2="15" stroke="#2C3E50" stroke-width="2"/>
+  <text x="0" y="35" text-anchor="middle" font-size="10" fill="#5F5E5A" font-weight="bold">C2 · 2200 µF</text>
+</g>
+
+<!-- Wires to servo bus -->
+<path d="M 95 510 L 95 540" class="wire-pos"/>
+<path d="M 315 510 L 315 540" class="wire-neg"/>
+<text class="label-pwr" x="105" y="530">+6 V rail</text>
+<text class="label" x="305" y="530" text-anchor="end">GND</text>
+
+<!-- Vertical rail bus (left=+V, right=GND) feeding 4 servos -->
+<path d="M 95 540 L 95 745" class="wire-pos"/>
+<path d="M 315 540 L 315 745" class="wire-neg"/>
+
+<!-- Servo 1: Base -->
+<rect x="115" y="548" width="180" height="40" rx="4" class="box"/>
+<text class="label-bold" x="205" y="568" text-anchor="middle">Base servo · MG996R</text>
+<text class="label-sig" x="205" y="582" text-anchor="middle">PWM signal · D7</text>
+<path d="M 95 568 L 115 568" class="wire-pos"/>
+<path d="M 295 568 L 315 568" class="wire-neg"/>
+
+<!-- Servo 2: Shoulder -->
+<rect x="115" y="598" width="180" height="40" rx="4" class="box"/>
+<text class="label-bold" x="205" y="618" text-anchor="middle">Shoulder servo · MG996R</text>
+<text class="label-sig" x="205" y="632" text-anchor="middle">PWM signal · D8</text>
+<path d="M 95 618 L 115 618" class="wire-pos"/>
+<path d="M 295 618 L 315 618" class="wire-neg"/>
+
+<!-- Servo 3: Elbow -->
+<rect x="115" y="648" width="180" height="40" rx="4" class="box"/>
+<text class="label-bold" x="205" y="668" text-anchor="middle">Elbow servo · MG996R</text>
+<text class="label-sig" x="205" y="682" text-anchor="middle">PWM signal · D9</text>
+<path d="M 95 668 L 115 668" class="wire-pos"/>
+<path d="M 295 668 L 315 668" class="wire-neg"/>
+
+<!-- Servo 4: Wrist -->
+<rect x="115" y="698" width="180" height="40" rx="4" class="box"/>
+<text class="label-bold" x="205" y="718" text-anchor="middle">Wrist servo · MG996R</text>
+<text class="label-sig" x="205" y="732" text-anchor="middle">PWM signal · D10</text>
+<path d="M 95 718 L 115 718" class="wire-pos"/>
+<path d="M 295 718 L 315 718" class="wire-neg"/>
+
+<!-- ============================================================ -->
+<!--  RIGHT — PUMP RAIL                                           -->
+<!-- ============================================================ -->
+<rect x="420" y="55" width="350" height="710" rx="10" fill="#FAECE7" stroke="#993C1D" stroke-width="1" opacity="0.35"/>
+<text class="rail-title" x="595" y="80" text-anchor="middle">Pump rail · ~11 V unregulated</text>
+
+<!-- Battery pack 3× 18650 -->
+<rect x="450" y="100" width="290" height="130" rx="6" class="box-pwr"/>
+<text class="label-bold" x="595" y="120" text-anchor="middle">Battery pack — 3 × 18650 Li-ion (series)</text>
+
+<g transform="translate(485,135)">
+  <rect width="50" height="45" fill="#FFFFFF" stroke="#C0392B" stroke-width="1.2"/>
+  <text x="25" y="22" text-anchor="middle" font-size="10" fill="#C0392B" font-weight="bold">18650</text>
+  <text x="25" y="36" text-anchor="middle" font-size="9" fill="#5F5E5A">3.7 V</text>
+</g>
+<g transform="translate(570,135)">
+  <rect width="50" height="45" fill="#FFFFFF" stroke="#C0392B" stroke-width="1.2"/>
+  <text x="25" y="22" text-anchor="middle" font-size="10" fill="#C0392B" font-weight="bold">18650</text>
+  <text x="25" y="36" text-anchor="middle" font-size="9" fill="#5F5E5A">3.7 V</text>
+</g>
+<g transform="translate(655,135)">
+  <rect width="50" height="45" fill="#FFFFFF" stroke="#C0392B" stroke-width="1.2"/>
+  <text x="25" y="22" text-anchor="middle" font-size="10" fill="#C0392B" font-weight="bold">18650</text>
+  <text x="25" y="36" text-anchor="middle" font-size="9" fill="#5F5E5A">3.7 V</text>
+</g>
+
+<text class="label-sm" x="595" y="200" text-anchor="middle">Nominal output ≈ 11.1 V · Within pump's 9–13 V window</text>
+<text class="label-sm" x="595" y="217" text-anchor="middle" font-weight="bold">SW2 — pump rail switch wired in series with pack</text>
+
+<!-- Wires from battery -->
+<path d="M 485 230 L 485 295" class="wire-pos"/>
+<path d="M 705 230 L 705 580" class="wire-neg"/>
+<text class="label-pwr" x="495" y="252">+11.1 V</text>
+<text class="label" x="695" y="252" text-anchor="end">GND</text>
+
+<!-- Relay module -->
+<rect x="450" y="295" width="290" height="140" rx="6" class="box"/>
+<text class="label-bold" x="595" y="318" text-anchor="middle">Relay module — opto-isolated, 5 V coil</text>
+<text class="label-sm" x="595" y="338" text-anchor="middle">Switches +11.1 V through normally-open contact</text>
+<text class="label-sm" x="595" y="356" text-anchor="middle">Coil powered from Arduino 5 V; contact carries pump current</text>
+<text class="label-pwr" x="595" y="382" text-anchor="middle">Galvanic isolation between logic and pump rails</text>
+
+<!-- Signal terminals (lower part of relay box, with space for arrow) -->
+<text class="label-sig" x="595" y="408" text-anchor="middle">VCC · GND · IN — to Arduino 5 V / GND / D2</text>
+<path d="M 595 415 L 595 428" class="wire-sig" marker-end="url(#arrow)"/>
+<text class="label-sig" x="730" y="412" text-anchor="end">↑ to Arduino</text>
+
+<!-- Wire from relay output to pump -->
+<path d="M 485 435 L 485 480" class="wire-pos"/>
+<text class="label-pwr" x="495" y="460">switched +V</text>
+
+<!-- Pump -->
+<rect x="450" y="480" width="290" height="85" rx="6" class="box"/>
+<text class="label-bold" x="595" y="503" text-anchor="middle">12 V vacuum pump (diaphragm)</text>
+<text class="label-sm" x="595" y="523" text-anchor="middle">Vacuum ≈ 10 kPa · Stall current ≈ 0.8 A @ 12 V</text>
+<text class="label-sm" x="595" y="543" text-anchor="middle">Pneumatic outlet feeds suction cup via silicone tube</text>
+
+<!-- Silicone tube down to cup -->
+<path d="M 595 565 L 595 610" stroke="#5F5E5A" stroke-width="2" stroke-dasharray="4 3" fill="none"/>
+<text class="label" x="605" y="590" font-size="10">silicone tube</text>
+
+<!-- Suction cup -->
+<rect x="510" y="610" width="170" height="55" rx="6" class="box"/>
+<text class="label-bold" x="595" y="635" text-anchor="middle">Suction cup</text>
+<text class="label-sm" x="595" y="652" text-anchor="middle">End-effector grip surface</text>
+
+<!-- GND return: from pump back to battery GND via right-side rail -->
+<path d="M 485 565 L 705 565" class="wire-neg" stroke-dasharray="0"/>
+
+<!-- Boundary divider note at bottom -->
+<line x1="410" y1="55" x2="410" y2="755" stroke="#5F5E5A" stroke-width="1" stroke-dasharray="6 4"/>
+
+<!-- Legend at bottom -->
+<rect x="160" y="755" width="480" height="0" stroke="none"/>
+<g transform="translate(160,762)">
+  <line x1="0" y1="0" x2="25" y2="0" stroke="#C0392B" stroke-width="2"/>
+  <text x="30" y="4" font-size="11" fill="#2C3E50">+V (power)</text>
+  
+  <line x1="120" y1="0" x2="145" y2="0" stroke="#2C3E50" stroke-width="2"/>
+  <text x="150" y="4" font-size="11" fill="#2C3E50">GND</text>
+  
+  <line x1="195" y1="0" x2="220" y2="0" stroke="#028090" stroke-width="1.5" stroke-dasharray="5 3"/>
+  <text x="225" y="4" font-size="11" fill="#2C3E50">control signal from Arduino</text>
+  
+  <line x1="395" y1="0" x2="420" y2="0" stroke="#5F5E5A" stroke-width="2" stroke-dasharray="4 3"/>
+  <text x="425" y="4" font-size="11" fill="#2C3E50">pneumatic tubing</text>
+</g>
+
+</svg>
