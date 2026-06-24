@@ -1,7 +1,7 @@
 remote_theme: pages-themes/cayman@v0.2.0
 
-title: PickMasters — Smart Pick-and-Place Robotic System
-description: MEC 483: Mechatronics System Design — Abu Dhabi University, Spring 2026
+title: "PickMasters — Smart Pick-and-Place Robotic System"
+description: "MEC 483: Mechatronics System Design — Abu Dhabi University, Spring 2026"
 
 markdown: kramdown
 highlighter: rouge
