@@ -5,8 +5,8 @@
 
 /* ── Code blocks ─────────────────────────────────────────────────────────── */
 pre {
-  background: #1e1e2e;
-  border: 1px solid #313244;
+  background: #0d1117 !important;
+  border: 1px solid #30363d;
   border-radius: 8px;
   padding: 16px 20px;
   overflow-x: auto;
@@ -15,8 +15,8 @@ pre {
 }
 
 pre code {
-  color: #cdd6f4;
-  background: transparent;
+  color: #e6edf3 !important;
+  background: transparent !important;
 }
 
 code {
@@ -31,20 +31,26 @@ pre code {
   padding: 0;
 }
 
-/* ── Syntax highlighting (Catppuccin-inspired) ───────────────────────────── */
+/* ── Syntax highlighting (GitHub Dark inspired — high contrast) ──────────── */
 .highlight .k, .highlight .kd, .highlight .kn,
-.highlight .kp, .highlight .kr, .highlight .kt { color: #cba6f7; }
-.highlight .n, .highlight .nv, .highlight .vi   { color: #cdd6f4; }
+.highlight .kp, .highlight .kr, .highlight .kt { color: #ff7b72; font-weight: bold; }
+.highlight .n, .highlight .nv, .highlight .vi   { color: #e6edf3; }
+.highlight .na                                   { color: #79c0ff; }
 .highlight .s, .highlight .s1, .highlight .s2,
-.highlight .sb, .highlight .sc, .highlight .se  { color: #a6e3a1; }
+.highlight .sb, .highlight .sc, .highlight .se,
+.highlight .dl                                   { color: #a5d6ff; }
 .highlight .c, .highlight .c1, .highlight .cm,
-.highlight .cp, .highlight .cs                   { color: #6c7086; font-style: italic; }
-.highlight .nf, .highlight .nb                   { color: #89b4fa; }
-.highlight .nc, .highlight .nn                   { color: #f9e2af; }
+.highlight .cp, .highlight .cs                   { color: #8b949e; font-style: italic; }
+.highlight .nf, .highlight .nb                   { color: #d2a8ff; }
+.highlight .nc, .highlight .nn                   { color: #ffa657; }
 .highlight .mi, .highlight .mf, .highlight .mh,
-.highlight .mo, .highlight .il                   { color: #fab387; }
-.highlight .o, .highlight .ow                    { color: #89dceb; }
-.highlight .p                                    { color: #cdd6f4; }
+.highlight .mo, .highlight .il                   { color: #79c0ff; }
+.highlight .o, .highlight .ow                    { color: #ff7b72; }
+.highlight .p                                    { color: #e6edf3; }
+.highlight .bp                                   { color: #79c0ff; }
+.highlight .gh, .highlight .gu                   { color: #ffa657; font-weight: bold; }
+.highlight .gd                                   { color: #ffa198; background: #490202; }
+.highlight .gi                                   { color: #7ee787; background: #04260f; }
 
 /* ── Tables ──────────────────────────────────────────────────────────────── */
 table {
@@ -118,4 +124,73 @@ h3 code, h4 code {
   padding: 3px 8px;
   border-radius: 4px;
   font-size: 0.85em;
+}
+
+/* ── Collapsible code sections ───────────────────────────────────────────── */
+details {
+  margin: 0.8em 0 1.5em 0;
+  border: 1px solid #30363d;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+details summary {
+  background: #161b22;
+  color: #58a6ff;
+  padding: 10px 16px;
+  cursor: pointer;
+  font-family: monospace;
+  font-size: 0.9em;
+  font-weight: 600;
+  user-select: none;
+  list-style: none;
+}
+
+details summary::-webkit-details-marker {
+  display: none;
+}
+
+details summary::before {
+  content: "▶ ";
+  color: #8b949e;
+  margin-right: 4px;
+}
+
+details[open] summary::before {
+  content: "▼ ";
+}
+
+details summary:hover {
+  background: #1c2129;
+}
+
+details .code-scroll {
+  max-height: 500px;
+  overflow-y: auto;
+  overflow-x: auto;
+  background: #0d1117;
+}
+
+details .code-scroll pre {
+  margin: 0;
+  border: none;
+  border-radius: 0;
+}
+
+details .code-scroll::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+details .code-scroll::-webkit-scrollbar-track {
+  background: #161b22;
+}
+
+details .code-scroll::-webkit-scrollbar-thumb {
+  background: #30363d;
+  border-radius: 4px;
+}
+
+details .code-scroll::-webkit-scrollbar-thumb:hover {
+  background: #484f58;
 }
