@@ -140,6 +140,7 @@ The immediate next step is completing camera-to-workspace coordinate mapping and
 
 | Resource | Description |
 |----------|-------------|
+| [Final Report](pages/report.md) | Full project report — PDF viewer and Word download |
 | [Presentations](pages/presentations.md) | Weekly progress slide decks from Week 2 through Week 12 |
 | [References](pages/references.md) | Full bibliography — Bolton, Spong, Craig, Nise, YOLO, OpenCV, ROS, datasheets |
 | [Bill of Materials](pages/bill-of-materials.md) | Complete parts list with quantities |
