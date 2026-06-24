@@ -1,6 +1,8 @@
 # PickMasters — Smart Pick-and-Place Robotic System
 
-**MEC 483: Mechatronics System Design | Abu Dhabi University — Spring 2026**
+![Abu Dhabi University](media/Abu_Dhabi_University.png)
+
+## MEC 483: Mechatronics System Design — Abu Dhabi University, Spring 2026
 
 | Member | Role |
 |--------|------|
