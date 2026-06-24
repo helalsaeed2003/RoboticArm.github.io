@@ -5,18 +5,20 @@
 
 /* ── Banner logo ────────────────────────────────────────────────────────── */
 .page-header {
-  text-align: center;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  text-align: center !important;
 }
 
-.banner-logo {
-  width: 180px;
-  display: block;
-  margin: 0 auto 20px auto;
+.page-header .banner-logo {
+  width: 180px !important;
+  max-width: 180px !important;
+  display: block !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+  margin-top: 0 !important;
+  margin-bottom: 20px !important;
   border-radius: 0 !important;
   box-shadow: none !important;
+  float: none !important;
 }
 
 /* ── Code blocks ─────────────────────────────────────────────────────────── */
