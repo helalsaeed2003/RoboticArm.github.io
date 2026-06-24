@@ -10,17 +10,17 @@ These are the computer vision scripts developed during the project. The producti
 
 ## `detect_and_move.py`
 
-> Python 3 | 258 lines
-
 Development copy of the main vision-and-control script. Functionally equivalent to the final version — loads the YOLOv11n model, tracks objects with persistent IDs, and sends fuzzy-logic motion commands over serial. This copy was the working version during active development; the production copy in `Final Code/` is the clean release.
 
 ---
 
 ## `detect_v2.py`
 
-> Python 3 | 108 lines
-
 Detection-only script without motor control. Loads the YOLOv11n model, opens the camera, runs inference, and displays annotated frames with bounding boxes and confidence scores. Used to validate model accuracy and tune confidence thresholds before wiring up the serial control loop.
+
+<details>
+<summary>Python 3 | 108 lines</summary>
+<div class="code-scroll">
 
 ```python
 import cv2
@@ -132,13 +132,18 @@ if arduino:
     arduino.close()
 ```
 
+</div>
+</details>
+
 ---
 
 ## `capture.py`
 
-> Python 3 | 16 lines
-
 Simple webcam capture utility. Opens the camera, displays a live feed, and saves frames to disk when a key is pressed. Used to collect the training dataset for the YOLOv11 model.
+
+<details>
+<summary>Python 3 | 16 lines</summary>
+<div class="code-scroll">
 
 ```python
 import cv2
@@ -158,6 +163,9 @@ while True:
 cap.release()
 cv2.destroyAllWindows()
 ```
+
+</div>
+</details>
 
 ---
 

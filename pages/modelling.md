@@ -8,7 +8,7 @@
 
 Three goals: confirm static torque margins at worst-case configuration; derive the closed-loop wrist transfer function and analyse stability/bandwidth in the frequency domain [1, Ch. 18, 19]; provide a baseline for prototype comparison. Approach: lumped-parameter, rigid-body links, single viscous-damping coefficient per joint, second-order internal servo model [1, Ch. 17].
 
-## Kinematic Chain — Denavit–Hartenberg Parameters — Denavit–Hartenberg Parameters
+## Kinematic Chain — Denavit–Hartenberg Parameters
 
 Modelled as a three-link planar serial chain of revolute joints. The hand servo is a separate 1-DOF gripper (no end-effector reference change). Base rotation is delivered by the mobile-base differential drive, so it is not part of the arm chain.
 
@@ -49,7 +49,7 @@ with ωₙ = √(K/J), ζ = b / (2√(K·J)). MG996R internals are a black box, 
 G(s) = 3947.8 / (s² + 87.96·s + 3947.8)
 ```
 
-## Wrist PID Loop — Open-Loop Bode Analysis — Open-Loop Bode Analysis
+## Wrist PID Loop — Open-Loop Bode Analysis
 
 Parallel-form PID with the firmware gains from §9.6:
 

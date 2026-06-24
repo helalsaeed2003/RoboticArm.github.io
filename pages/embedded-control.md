@@ -8,7 +8,7 @@
 
 Two Arduino sketches, one per mode. **ArmController.ino** (manual mode) drives all four arm servos, both DC motors, the pump relay, the IMU loop, and the safety interlock. **PickAndMove.ino** (automatic mode) drives only the two DC base motors via the fuzzy-logic controller — arm servos are inactive in auto mode and the operator switches back to manual for the pick step. Two sketches give clear responsibility per file and let the two control laws (PID on the wrist; fuzzy on the base) be explained separately. Mode switching requires reflashing — acceptable for the benchtop demo, would change for industrial use. Pin allocation for L298N, MPU6050, pump relay, and safety input is shared between both sketches.
 
-## Arm Controller Firmware — ArmController.ino — ArmController.ino
+## Arm Controller Firmware — ArmController.ino
 
 Written in C. Main loop runs at full ATmega328P speed; internal timing gates IMU/wrist updates at 50 Hz. Every pass: refresh watchdog → handle pending serial → update safety interlock → if clear and IMU is due, read IMU and update wrist. Organised into six modules: serial parser with XOR checksum, IMU driver, PID wrist controller, safety-interlock state machine, DC motor driver layer over L298N, watchdog supervisor. Full source: Appendix C.1.
 
@@ -22,7 +22,7 @@ S<shoulder>,<elbow>,<wrist>,<hand>,M<left>,<right>,P<0|1>,W<0|1>*<XX>
 
 Angles 0–180; motor directions in {−1, 0, +1}; P = pump on/off; W = wrist auto (1) or manual (0). The trailing `*XX` is an optional XOR checksum of all bytes before the asterisk. Mismatched checksums are rejected and an error returned. Commands without `*XX` are accepted for terminal diagnostics.
 
-## Safety Interlock — Sequential Logic State Machine — Sequential Logic State Machine
+## Safety Interlock — Sequential Logic State Machine
 
 A single boolean `safetyClear` gates the actuators — if low, pump and motors are forced safe regardless of last received command. Servos remain controllable (mechanically self-limited). `safetyClear` is recomputed every 50 ms as the AND of three conditions:
 
@@ -36,11 +36,11 @@ Rising edge emits a confirmation over serial; falling edge emits a fault and imm
 
 AVR watchdog enabled at 2 s in `setup()` (`wdt_enable(WDTO_2S)`), reset every loop pass (`wdt_reset()`). A hung block (e.g. I²C wiring fault) triggers a reset back to the safe state. I²C library is also given a 3 ms bus timeout for graceful recovery from transient bus glitches.
 
-## Wrist Auto-Levelling — PID Loop — PID Loop
+## Wrist Auto-Levelling — PID Loop
 
 PID compensator [1, Ch. 21]. Setpoint = 0° (level). Process variable = pitch from atan2 of accelerometer X and Z. Output drives the wrist servo around 90°. Gains tuned empirically: **Kp = 1.0, Ki = 0.05, Kd = 0.15.** Two safeguards: integral term clamped to ±30°·s (anti-windup); total output saturated to 0–180° servo range. Loop runs at 50 Hz — well above the MG996R's ~10 Hz internal bandwidth, satisfying Nyquist.
 
-## Pick-and-Move Controller — Fuzzy Logic Vision-Guided Motion — Fuzzy Logic Vision-Guided Motion
+## Pick-and-Move Controller — Fuzzy Logic Vision-Guided Motion
 
 PickAndMove.ino uses a Mamdani fuzzy controller. Input: absolute pixel error between target object centre and target-box centre. Output: motor PWM speed. Fuzzy is used because the pixel-error → speed relationship is non-linear (aggressive when far, gentle when close) — no single proportional gain works for both regimes.
 
@@ -52,7 +52,7 @@ PickAndMove.ino uses a Mamdani fuzzy controller. Input: absolute pixel error bet
 
 Motion is pulse-based: motors run 70 ms then auto-stop; the host re-sends pulses as long as motion is needed. A dropped serial link, host crash, or any communication failure halts the robot — a dead-man's-switch [1, Sec. 5.4]. YOLOv11 supplies the perception side [1, Ch. 22].
 
-## Choice of Programming Language — Assembly vs C — Assembly vs C
+## Choice of Programming Language — Assembly vs C
 
 C used for both sketches. Assembly was considered for I²C IMU reads and the inner fuzzy defuzzification loop. Rejected both: I²C reads complete in well under the 20 ms loop budget; software-float defuzzification takes under 1 ms. No measurable timing benefit, and the legibility cost of mixed-language code is high. Standard guidance from [1, Ch. 12] for modern 8-bit MCUs.
 
