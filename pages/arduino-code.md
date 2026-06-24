@@ -15,9 +15,7 @@ An earlier version of the manual-mode firmware before PID wrist levelling and th
 <details>
 <summary>Arduino C | 267 lines</summary>
 <div class="code-scroll">
-
-```cpp
-// PickMasters — ArmController firmware
+<pre><code>// PickMasters — ArmController firmware
 // 4-DOF robotic arm, manual control over USB serial (paired with DriveControl.pde)
 //
 // Hardware: Arduino Uno + standalone L298N dual H-bridge motor driver
@@ -34,14 +32,14 @@ An earlier version of the manual-mode firmware before PID wrist levelling and th
 //                 ENB=6, IN3=7, IN4=8 (right wheel).
 //
 // Serial protocol (9600 baud, newline-terminated, ONE combined message per frame):
-//   S<shoulder>,<elbow>,<wrist>,<hand>,M<left>,<right>,P<0|1>,W<0|1>
+//   S&lt;shoulder&gt;,&lt;elbow&gt;,&lt;wrist&gt;,&lt;hand&gt;,M&lt;left&gt;,&lt;right&gt;,P&lt;0|1&gt;,W&lt;0|1&gt;
 //     servo angles 0..180, motor directions -1/0/1, P1 = pump on,
 //     W1 = wrist AUTO (IMU leveling), W0 = wrist MANUAL
 //   cal     — re-zero IMU pitch offset (sent by the DriveControl CalButton)
 //   status  — print all current angles and states (single compact line)
 
-#include <Wire.h>
-#include <Servo.h>
+#include &lt;Wire.h&gt;
+#include &lt;Servo.h&gt;
 
 // ── Pin definitions ──────────────────────────────────────────────────────────
 #define SHOULDER_PIN  9
@@ -90,7 +88,7 @@ byte serialLen = 0;
 // ─────────────────────────────────────────────────────────────────────────────
 void setup() {
   Serial.begin(9600);
-  Serial.write("PickMasters booting\n");   // instant proof serial is alive
+  Serial.write(&quot;PickMasters booting\n&quot;);   // instant proof serial is alive
 
   // Pump relay — active LOW, so HIGH = OFF at startup
   pinMode(PUMP_PIN, OUTPUT);
@@ -129,17 +127,17 @@ void setup() {
     calibrateIMU();
   } else {
     wristAutoMode = false;
-    Serial.write("WARN: IMU not found — wrist auto-level disabled\n");
+    Serial.write(&quot;WARN: IMU not found — wrist auto-level disabled\n&quot;);
   }
 
-  Serial.write("PickMasters ready\n");
+  Serial.write(&quot;PickMasters ready\n&quot;);
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
 void loop() {
   handleSerial();
 
-  if (imuOk && millis() - lastIMU >= 20) {   // 50 Hz IMU / wrist update
+  if (imuOk &amp;&amp; millis() - lastIMU &gt;= 20) {   // 50 Hz IMU / wrist update
     lastIMU = millis();
     currentPitch = readPitch();
     if (wristAutoMode) {
@@ -153,23 +151,23 @@ void loop() {
 void handleSerial() {
   while (Serial.available()) {
     char c = (char)Serial.read();
-    if (c == '\n') {
-      serialBuf[serialLen] = '\0';
+    if (c == &#x27;\n&#x27;) {
+      serialBuf[serialLen] = &#x27;\0&#x27;;
       parseCommand(serialBuf);
       serialLen = 0;
-    } else if (c != '\r' && serialLen < sizeof(serialBuf) - 1) {
+    } else if (c != &#x27;\r&#x27; &amp;&amp; serialLen &lt; sizeof(serialBuf) - 1) {
       serialBuf[serialLen++] = c;
     }
   }
 }
 
 void parseCommand(char *cmd) {
-  if (cmd[0] == '\0') return;
+  if (cmd[0] == &#x27;\0&#x27;) return;
 
-  if (cmd[0] == 'S') {
+  if (cmd[0] == &#x27;S&#x27;) {
     int sh, el, wr, ha, l, r, p, w;
-    if (sscanf(cmd, "S%d,%d,%d,%d,M%d,%d,P%d,W%d",
-               &sh, &el, &wr, &ha, &l, &r, &p, &w) == 8) {
+    if (sscanf(cmd, &quot;S%d,%d,%d,%d,M%d,%d,P%d,W%d&quot;,
+               &amp;sh, &amp;el, &amp;wr, &amp;ha, &amp;l, &amp;r, &amp;p, &amp;w) == 8) {
       shoulderAngle = constrain(sh, 0, 180);
       elbowAngle    = constrain(el, 0, 180);
       handAngle     = constrain(ha, 0, 180);
@@ -192,22 +190,22 @@ void parseCommand(char *cmd) {
       digitalWrite(PUMP_PIN, pumpOn ? LOW : HIGH);
     }
 
-  } else if (strcmp(cmd, "cal") == 0) {
+  } else if (strcmp(cmd, &quot;cal&quot;) == 0) {
     calibrateIMU();
-    Serial.write("cal ok\n");
+    Serial.write(&quot;cal ok\n&quot;);
 
-  } else if (strcmp(cmd, "status") == 0) {
+  } else if (strcmp(cmd, &quot;status&quot;) == 0) {
     printStatus();
   }
 }
 
 // ── DC motor control (L298N) ──────────────────────────────────────────────────
 void setMotorLeft(int dir) {
-  if (dir > 0) {
+  if (dir &gt; 0) {
     digitalWrite(IN1, HIGH);
     digitalWrite(IN2, LOW);
     analogWrite(ENA, DRIVE_SPEED);
-  } else if (dir < 0) {
+  } else if (dir &lt; 0) {
     digitalWrite(IN1, LOW);
     digitalWrite(IN2, HIGH);
     analogWrite(ENA, DRIVE_SPEED);
@@ -219,11 +217,11 @@ void setMotorLeft(int dir) {
 }
 
 void setMotorRight(int dir) {
-  if (dir > 0) {
+  if (dir &gt; 0) {
     digitalWrite(IN3, HIGH);
     digitalWrite(IN4, LOW);
     analogWrite(ENB, DRIVE_SPEED);
-  } else if (dir < 0) {
+  } else if (dir &lt; 0) {
     digitalWrite(IN3, LOW);
     digitalWrite(IN4, HIGH);
     analogWrite(ENB, DRIVE_SPEED);
@@ -242,9 +240,9 @@ float readPitch() {
 
   if (Wire.requestFrom(MPU_ADDR, 6, true) != 6) return currentPitch;
 
-  float accelX = (int16_t)(Wire.read() << 8 | Wire.read()) / 16384.0;
-  float accelY = (int16_t)(Wire.read() << 8 | Wire.read()) / 16384.0;
-  float accelZ = (int16_t)(Wire.read() << 8 | Wire.read()) / 16384.0;
+  float accelX = (int16_t)(Wire.read() &lt;&lt; 8 | Wire.read()) / 16384.0;
+  float accelY = (int16_t)(Wire.read() &lt;&lt; 8 | Wire.read()) / 16384.0;
+  float accelZ = (int16_t)(Wire.read() &lt;&lt; 8 | Wire.read()) / 16384.0;
   (void)accelY;
 
   return atan2(accelX, accelZ) * 180.0 / PI;
@@ -252,7 +250,7 @@ float readPitch() {
 
 void calibrateIMU() {
   float sum = 0;
-  for (int i = 0; i < 50; i++) {
+  for (int i = 0; i &lt; 50; i++) {
     sum += readPitch();
     delay(10);
   }
@@ -261,20 +259,18 @@ void calibrateIMU() {
 
 // ── Status report (single compact line) ──────────────────────────────────────
 void printStatus() {
-  Serial.print("S:");    Serial.print(shoulderAngle);
-  Serial.print(" E:");   Serial.print(elbowAngle);
-  Serial.print(" W:");   Serial.print(wristAngle);
-  Serial.print(" H:");   Serial.print(handAngle);
-  Serial.print(" M:");   Serial.print(leftDir);
-  Serial.print(",");     Serial.print(rightDir);
-  Serial.print(" P:");   Serial.print(pumpOn ? 1 : 0);
-  Serial.print(" MODE:"); Serial.print(wristAutoMode ? "AUTO" : "MAN");
-  Serial.print(" IMU:");  Serial.print(imuOk ? "OK" : "NONE");
-  Serial.print(" PITCH:"); Serial.print(currentPitch - pitchOffset, 1);
-  Serial.write('\n');
-}
-```
-
+  Serial.print(&quot;S:&quot;);    Serial.print(shoulderAngle);
+  Serial.print(&quot; E:&quot;);   Serial.print(elbowAngle);
+  Serial.print(&quot; W:&quot;);   Serial.print(wristAngle);
+  Serial.print(&quot; H:&quot;);   Serial.print(handAngle);
+  Serial.print(&quot; M:&quot;);   Serial.print(leftDir);
+  Serial.print(&quot;,&quot;);     Serial.print(rightDir);
+  Serial.print(&quot; P:&quot;);   Serial.print(pumpOn ? 1 : 0);
+  Serial.print(&quot; MODE:&quot;); Serial.print(wristAutoMode ? &quot;AUTO&quot; : &quot;MAN&quot;);
+  Serial.print(&quot; IMU:&quot;);  Serial.print(imuOk ? &quot;OK&quot; : &quot;NONE&quot;);
+  Serial.print(&quot; PITCH:&quot;); Serial.print(currentPitch - pitchOffset, 1);
+  Serial.write(&#x27;\n&#x27;);
+}</code></pre>
 </div>
 </details>
 
@@ -287,13 +283,11 @@ Interactive bench-test sketch for every hardware component. Open the Serial Moni
 <details>
 <summary>Arduino C | 251 lines</summary>
 <div class="code-scroll">
-
-```cpp
-// PickMasters — ComponentTest
+<pre><code>// PickMasters — ComponentTest
 // Interactive bench test for every component, using the CURRENT hardware setup
 // (standalone L298N motor driver + servos on digital pins).
 //
-// Open the Serial Monitor at 9600 baud, set line ending to "Newline" (or just
+// Open the Serial Monitor at 9600 baud, set line ending to &quot;Newline&quot; (or just
 // send single characters), and press a key to run each test:
 //
 //   1  — Shoulder servo sweep  (pin 9)
@@ -302,15 +296,15 @@ Interactive bench-test sketch for every hardware component. Open the Serial Moni
 //   4  — Hand servo sweep      (pin 12)
 //   5  — All servos sweep together
 //   p  — Pump relay ON/OFF toggle      (pin 3, ACTIVE LOW)
-//   l  — Left motor: FWD -> REV -> STOP (ENA=5, IN1=2, IN2=4 -> OUT1/OUT2)
-//   r  — Right motor: FWD -> REV -> STOP (ENB=6, IN3=7, IN4=8 -> OUT3/OUT4)
-//   m  — Both motors: FWD -> REV -> PIVOT L -> PIVOT R -> STOP
+//   l  — Left motor: FWD -&gt; REV -&gt; STOP (ENA=5, IN1=2, IN2=4 -&gt; OUT1/OUT2)
+//   r  — Right motor: FWD -&gt; REV -&gt; STOP (ENB=6, IN3=7, IN4=8 -&gt; OUT3/OUT4)
+//   m  — Both motors: FWD -&gt; REV -&gt; PIVOT L -&gt; PIVOT R -&gt; STOP
 //   i  — Stream IMU pitch for 5 s         (MPU6050 on A4/A5)
 //   b  — Watch calibration button for 5 s (pin A0, INPUT_PULLUP)
 //   h  — Print this menu again
 
-#include <Wire.h>
-#include <Servo.h>
+#include &lt;Wire.h&gt;
+#include &lt;Servo.h&gt;
 
 // ── Servo pins ───────────────────────────────────────────────────────────────
 #define SHOULDER_PIN  9
@@ -372,7 +366,7 @@ void setup() {
   Wire.endTransmission(true);
   delay(200);
 
-  Serial.println(F("PickMasters component test ready"));
+  Serial.println(F(&quot;PickMasters component test ready&quot;));
   printMenu();
 }
 
@@ -382,106 +376,106 @@ void loop() {
   char c = (char)Serial.read();
 
   switch (c) {
-    case '1': sweepServo(shoulderServo, "Shoulder"); break;
-    case '2': sweepServo(elbowServo,    "Elbow");    break;
-    case '3': sweepServo(wristServo,    "Wrist");    break;
-    case '4': sweepServo(handServo,     "Hand");     break;
-    case '5': sweepAllServos();                      break;
-    case 'p': togglePump();                          break;
-    case 'l': testMotorLeft();                       break;
-    case 'r': testMotorRight();                      break;
-    case 'm': testBothMotors();                      break;
-    case 'i': streamIMU();                           break;
-    case 'b': watchButton();                         break;
-    case 'h': printMenu();                           break;
-    case '\n': case '\r': break;   // ignore line endings
+    case &#x27;1&#x27;: sweepServo(shoulderServo, &quot;Shoulder&quot;); break;
+    case &#x27;2&#x27;: sweepServo(elbowServo,    &quot;Elbow&quot;);    break;
+    case &#x27;3&#x27;: sweepServo(wristServo,    &quot;Wrist&quot;);    break;
+    case &#x27;4&#x27;: sweepServo(handServo,     &quot;Hand&quot;);     break;
+    case &#x27;5&#x27;: sweepAllServos();                      break;
+    case &#x27;p&#x27;: togglePump();                          break;
+    case &#x27;l&#x27;: testMotorLeft();                       break;
+    case &#x27;r&#x27;: testMotorRight();                      break;
+    case &#x27;m&#x27;: testBothMotors();                      break;
+    case &#x27;i&#x27;: streamIMU();                           break;
+    case &#x27;b&#x27;: watchButton();                         break;
+    case &#x27;h&#x27;: printMenu();                           break;
+    case &#x27;\n&#x27;: case &#x27;\r&#x27;: break;   // ignore line endings
     default:
-      Serial.print(F("Unknown command: "));
+      Serial.print(F(&quot;Unknown command: &quot;));
       Serial.println(c);
       break;
   }
 }
 
 // ── Servo tests ───────────────────────────────────────────────────────────────
-void sweepServo(Servo &s, const char *name) {
-  Serial.print(F("Sweeping "));
+void sweepServo(Servo &amp;s, const char *name) {
+  Serial.print(F(&quot;Sweeping &quot;));
   Serial.print(name);
-  Serial.println(F(" 0 -> 180 -> 90"));
-  for (int a = 0; a <= 180; a += 2) { s.write(a); delay(15); }
-  for (int a = 180; a >= 0; a -= 2) { s.write(a); delay(15); }
+  Serial.println(F(&quot; 0 -&gt; 180 -&gt; 90&quot;));
+  for (int a = 0; a &lt;= 180; a += 2) { s.write(a); delay(15); }
+  for (int a = 180; a &gt;= 0; a -= 2) { s.write(a); delay(15); }
   s.write(90);
-  Serial.println(F("  done (returned to 90)"));
+  Serial.println(F(&quot;  done (returned to 90)&quot;));
 }
 
 void sweepAllServos() {
-  Serial.println(F("Sweeping ALL servos 0 -> 180 -> 90"));
-  for (int a = 0; a <= 180; a += 2) {
+  Serial.println(F(&quot;Sweeping ALL servos 0 -&gt; 180 -&gt; 90&quot;));
+  for (int a = 0; a &lt;= 180; a += 2) {
     shoulderServo.write(a); elbowServo.write(a);
     wristServo.write(a);    handServo.write(a);
     delay(15);
   }
-  for (int a = 180; a >= 0; a -= 2) {
+  for (int a = 180; a &gt;= 0; a -= 2) {
     shoulderServo.write(a); elbowServo.write(a);
     wristServo.write(a);    handServo.write(a);
     delay(15);
   }
   shoulderServo.write(90); elbowServo.write(90);
   wristServo.write(90);    handServo.write(90);
-  Serial.println(F("  done (all returned to 90)"));
+  Serial.println(F(&quot;  done (all returned to 90)&quot;));
 }
 
 // ── Pump test ─────────────────────────────────────────────────────────────────
 void togglePump() {
   pumpOn = !pumpOn;
   digitalWrite(PUMP_PIN, pumpOn ? LOW : HIGH);   // active LOW
-  Serial.print(F("Pump "));
-  Serial.println(pumpOn ? F("ON") : F("OFF"));
+  Serial.print(F(&quot;Pump &quot;));
+  Serial.println(pumpOn ? F(&quot;ON&quot;) : F(&quot;OFF&quot;));
 }
 
 // ── Motor tests ───────────────────────────────────────────────────────────────
 void setMotorLeft(int dir) {
-  if (dir > 0)      { digitalWrite(IN1, HIGH); digitalWrite(IN2, LOW);  analogWrite(ENA, DRIVE_SPEED); }
-  else if (dir < 0) { digitalWrite(IN1, LOW);  digitalWrite(IN2, HIGH); analogWrite(ENA, DRIVE_SPEED); }
+  if (dir &gt; 0)      { digitalWrite(IN1, HIGH); digitalWrite(IN2, LOW);  analogWrite(ENA, DRIVE_SPEED); }
+  else if (dir &lt; 0) { digitalWrite(IN1, LOW);  digitalWrite(IN2, HIGH); analogWrite(ENA, DRIVE_SPEED); }
   else              { digitalWrite(IN1, LOW);  digitalWrite(IN2, LOW);  analogWrite(ENA, 0); }
 }
 
 void setMotorRight(int dir) {
-  if (dir > 0)      { digitalWrite(IN3, HIGH); digitalWrite(IN4, LOW);  analogWrite(ENB, DRIVE_SPEED); }
-  else if (dir < 0) { digitalWrite(IN3, LOW);  digitalWrite(IN4, HIGH); analogWrite(ENB, DRIVE_SPEED); }
+  if (dir &gt; 0)      { digitalWrite(IN3, HIGH); digitalWrite(IN4, LOW);  analogWrite(ENB, DRIVE_SPEED); }
+  else if (dir &lt; 0) { digitalWrite(IN3, LOW);  digitalWrite(IN4, HIGH); analogWrite(ENB, DRIVE_SPEED); }
   else              { digitalWrite(IN3, LOW);  digitalWrite(IN4, LOW);  analogWrite(ENB, 0); }
 }
 
 void stopMotors() { setMotorLeft(0); setMotorRight(0); }
 
 void testMotorLeft() {
-  Serial.println(F("LEFT motor (OUT1/OUT2): FWD 1.5s"));
+  Serial.println(F(&quot;LEFT motor (OUT1/OUT2): FWD 1.5s&quot;));
   setMotorLeft(1);  delay(1500);
-  Serial.println(F("  REV 1.5s"));
+  Serial.println(F(&quot;  REV 1.5s&quot;));
   setMotorLeft(-1); delay(1500);
   setMotorLeft(0);
-  Serial.println(F("  STOP"));
+  Serial.println(F(&quot;  STOP&quot;));
 }
 
 void testMotorRight() {
-  Serial.println(F("RIGHT motor (OUT3/OUT4): FWD 1.5s"));
+  Serial.println(F(&quot;RIGHT motor (OUT3/OUT4): FWD 1.5s&quot;));
   setMotorRight(1);  delay(1500);
-  Serial.println(F("  REV 1.5s"));
+  Serial.println(F(&quot;  REV 1.5s&quot;));
   setMotorRight(-1); delay(1500);
   setMotorRight(0);
-  Serial.println(F("  STOP"));
+  Serial.println(F(&quot;  STOP&quot;));
 }
 
 void testBothMotors() {
-  Serial.println(F("BOTH: forward 1.5s"));
+  Serial.println(F(&quot;BOTH: forward 1.5s&quot;));
   setMotorLeft(1);  setMotorRight(1);  delay(1500);
-  Serial.println(F("  reverse 1.5s"));
+  Serial.println(F(&quot;  reverse 1.5s&quot;));
   setMotorLeft(-1); setMotorRight(-1); delay(1500);
-  Serial.println(F("  pivot LEFT 1.5s"));
+  Serial.println(F(&quot;  pivot LEFT 1.5s&quot;));
   setMotorLeft(-1); setMotorRight(1);  delay(1500);
-  Serial.println(F("  pivot RIGHT 1.5s"));
+  Serial.println(F(&quot;  pivot RIGHT 1.5s&quot;));
   setMotorLeft(1);  setMotorRight(-1); delay(1500);
   stopMotors();
-  Serial.println(F("  STOP"));
+  Serial.println(F(&quot;  STOP&quot;));
 }
 
 // ── IMU test ──────────────────────────────────────────────────────────────────
@@ -490,58 +484,56 @@ float readPitch() {
   Wire.write(0x3B);
   Wire.endTransmission(false);
   Wire.requestFrom(MPU_ADDR, 6, true);
-  float accelX = (int16_t)(Wire.read() << 8 | Wire.read()) / 16384.0;
-  float accelY = (int16_t)(Wire.read() << 8 | Wire.read()) / 16384.0;
-  float accelZ = (int16_t)(Wire.read() << 8 | Wire.read()) / 16384.0;
+  float accelX = (int16_t)(Wire.read() &lt;&lt; 8 | Wire.read()) / 16384.0;
+  float accelY = (int16_t)(Wire.read() &lt;&lt; 8 | Wire.read()) / 16384.0;
+  float accelZ = (int16_t)(Wire.read() &lt;&lt; 8 | Wire.read()) / 16384.0;
   (void)accelY;
   return atan2(accelX, accelZ) * 180.0 / PI;
 }
 
 void streamIMU() {
-  Serial.println(F("Streaming IMU pitch for 5 s — tilt the arm..."));
+  Serial.println(F(&quot;Streaming IMU pitch for 5 s — tilt the arm...&quot;));
   unsigned long t0 = millis();
-  while (millis() - t0 < 5000) {
-    Serial.print(F("  pitch = "));
+  while (millis() - t0 &lt; 5000) {
+    Serial.print(F(&quot;  pitch = &quot;));
     Serial.print(readPitch(), 1);
-    Serial.println(F(" deg"));
+    Serial.println(F(&quot; deg&quot;));
     delay(200);
   }
-  Serial.println(F("  done"));
+  Serial.println(F(&quot;  done&quot;));
 }
 
 // ── Calibration button test ──────────────────────────────────────────────────
 void watchButton() {
-  Serial.println(F("Watching cal button (pin A0) for 5 s — press it..."));
+  Serial.println(F(&quot;Watching cal button (pin A0) for 5 s — press it...&quot;));
   bool prev = HIGH;
   unsigned long t0 = millis();
-  while (millis() - t0 < 5000) {
+  while (millis() - t0 &lt; 5000) {
     bool btn = digitalRead(CAL_BUTTON);
-    if (btn == LOW && prev == HIGH) Serial.println(F("  BUTTON PRESSED"));
+    if (btn == LOW &amp;&amp; prev == HIGH) Serial.println(F(&quot;  BUTTON PRESSED&quot;));
     prev = btn;
     delay(10);
   }
-  Serial.println(F("  done"));
+  Serial.println(F(&quot;  done&quot;));
 }
 
 // ── Menu ──────────────────────────────────────────────────────────────────────
 void printMenu() {
-  Serial.println(F("------ component test menu ------"));
-  Serial.println(F(" 1  Shoulder servo (pin 9)"));
-  Serial.println(F(" 2  Elbow servo    (pin 10)"));
-  Serial.println(F(" 3  Wrist servo    (pin 11)"));
-  Serial.println(F(" 4  Hand servo     (pin 12)"));
-  Serial.println(F(" 5  All servos together"));
-  Serial.println(F(" p  Pump relay toggle (pin 3)"));
-  Serial.println(F(" l  Left motor  (OUT1/OUT2)"));
-  Serial.println(F(" r  Right motor (OUT3/OUT4)"));
-  Serial.println(F(" m  Both motors sequence"));
-  Serial.println(F(" i  IMU pitch stream (5 s)"));
-  Serial.println(F(" b  Cal button watch (pin A0, 5 s)"));
-  Serial.println(F(" h  Show this menu"));
-  Serial.println(F("--------------------------------"));
-}
-```
-
+  Serial.println(F(&quot;------ component test menu ------&quot;));
+  Serial.println(F(&quot; 1  Shoulder servo (pin 9)&quot;));
+  Serial.println(F(&quot; 2  Elbow servo    (pin 10)&quot;));
+  Serial.println(F(&quot; 3  Wrist servo    (pin 11)&quot;));
+  Serial.println(F(&quot; 4  Hand servo     (pin 12)&quot;));
+  Serial.println(F(&quot; 5  All servos together&quot;));
+  Serial.println(F(&quot; p  Pump relay toggle (pin 3)&quot;));
+  Serial.println(F(&quot; l  Left motor  (OUT1/OUT2)&quot;));
+  Serial.println(F(&quot; r  Right motor (OUT3/OUT4)&quot;));
+  Serial.println(F(&quot; m  Both motors sequence&quot;));
+  Serial.println(F(&quot; i  IMU pitch stream (5 s)&quot;));
+  Serial.println(F(&quot; b  Cal button watch (pin A0, 5 s)&quot;));
+  Serial.println(F(&quot; h  Show this menu&quot;));
+  Serial.println(F(&quot;--------------------------------&quot;));
+}</code></pre>
 </div>
 </details>
 
@@ -554,10 +546,8 @@ Early automatic-mode prototype. Combines servo control with basic serial command
 <details>
 <summary>Arduino C | 184 lines</summary>
 <div class="code-scroll">
-
-```cpp
-#include <Wire.h>
-#include <Servo.h>
+<pre><code>#include &lt;Wire.h&gt;
+#include &lt;Servo.h&gt;
 
 // MPU6050
 const int MPU_ADDR = 0x68;
@@ -610,13 +600,13 @@ void setup() {
   delay(500);
   calibrate();
 
-  Serial.println("=== Arm Controller Ready ===");
-  Serial.println("Format: <servo> <angle>");
-  Serial.println("  1=Base  2=Shoulder  3=Elbow");
-  Serial.println("  Wrist is auto-leveled");
-  Serial.println("Type 'cal' to re-zero IMU");
-  Serial.println("Type 'status' for current angles");
-  Serial.println("============================\n");
+  Serial.println(&quot;=== Arm Controller Ready ===&quot;);
+  Serial.println(&quot;Format: &lt;servo&gt; &lt;angle&gt;&quot;);
+  Serial.println(&quot;  1=Base  2=Shoulder  3=Elbow&quot;);
+  Serial.println(&quot;  Wrist is auto-leveled&quot;);
+  Serial.println(&quot;Type &#x27;cal&#x27; to re-zero IMU&quot;);
+  Serial.println(&quot;Type &#x27;status&#x27; for current angles&quot;);
+  Serial.println(&quot;============================\n&quot;);
 }
 
 // ---------- MPU6050 ----------
@@ -627,9 +617,9 @@ void readMPU() {
   Wire.endTransmission(false);
   Wire.requestFrom(MPU_ADDR, 6, true);
 
-  accelX = (Wire.read() << 8 | Wire.read()) / 16384.0;
-  accelY = (Wire.read() << 8 | Wire.read()) / 16384.0;
-  accelZ = (Wire.read() << 8 | Wire.read()) / 16384.0;
+  accelX = (Wire.read() &lt;&lt; 8 | Wire.read()) / 16384.0;
+  accelY = (Wire.read() &lt;&lt; 8 | Wire.read()) / 16384.0;
+  accelZ = (Wire.read() &lt;&lt; 8 | Wire.read()) / 16384.0;
 }
 
 float getPitch() {
@@ -638,13 +628,13 @@ float getPitch() {
 
 void calibrate() {
   float sum = 0;
-  for (int i = 0; i < 50; i++) {
+  for (int i = 0; i &lt; 50; i++) {
     readMPU();
     sum += getPitch();
     delay(10);
   }
   pitchOffset = sum / 50.0;
-  Serial.print("Calibrated. Offset: ");
+  Serial.print(&quot;Calibrated. Offset: &quot;);
   Serial.println(pitchOffset);
 }
 
@@ -664,35 +654,35 @@ void updateWrist() {
 void handleSerial() {
   if (!Serial.available()) return;
 
-  String input = Serial.readStringUntil('\n');
+  String input = Serial.readStringUntil(&#x27;\n&#x27;);
   input.trim();
 
-  if (input.equalsIgnoreCase("cal")) {
-    Serial.println("Re-calibrating...");
+  if (input.equalsIgnoreCase(&quot;cal&quot;)) {
+    Serial.println(&quot;Re-calibrating...&quot;);
     calibrate();
     return;
   }
 
-  if (input.equalsIgnoreCase("status")) {
+  if (input.equalsIgnoreCase(&quot;status&quot;)) {
     printStatus();
     return;
   }
 
-  int spaceIndex = input.indexOf(' ');
+  int spaceIndex = input.indexOf(&#x27; &#x27;);
   if (spaceIndex == -1) {
-    Serial.println("Invalid format. Use: <servo> <angle>");
+    Serial.println(&quot;Invalid format. Use: &lt;servo&gt; &lt;angle&gt;&quot;);
     return;
   }
 
   int servoNum = input.substring(0, spaceIndex).toInt();
   int angle    = input.substring(spaceIndex + 1).toInt();
 
-  if (servoNum < 1 || servoNum > 3) {
-    Serial.println("Servo must be 1-3. Wrist is automatic.");
+  if (servoNum &lt; 1 || servoNum &gt; 3) {
+    Serial.println(&quot;Servo must be 1-3. Wrist is automatic.&quot;);
     return;
   }
-  if (angle < 0 || angle > 180) {
-    Serial.println("Angle must be 0-180.");
+  if (angle &lt; 0 || angle &gt; 180) {
+    Serial.println(&quot;Angle must be 0-180.&quot;);
     return;
   }
 
@@ -700,38 +690,38 @@ void handleSerial() {
     case 1:
       baseAngle = angle;
       baseServo.write(angle);
-      Serial.print("Base -> ");
+      Serial.print(&quot;Base -&gt; &quot;);
       break;
     case 2:
       shoulderAngle = angle;
       shoulderServo.write(angle);
-      Serial.print("Shoulder -> ");
+      Serial.print(&quot;Shoulder -&gt; &quot;);
       break;
     case 3:
       elbowAngle = angle;
       elbowServo.write(angle);
-      Serial.print("Elbow -> ");
+      Serial.print(&quot;Elbow -&gt; &quot;);
       break;
   }
   Serial.print(angle);
-  Serial.println(" deg");
+  Serial.println(&quot; deg&quot;);
 }
 
 void printStatus() {
-  Serial.println("----- Current Angles -----");
-  Serial.print("  1) Base     : "); Serial.println(baseAngle);
-  Serial.print("  2) Shoulder : "); Serial.println(shoulderAngle);
-  Serial.print("  3) Elbow    : "); Serial.println(elbowAngle);
-  Serial.print("  4) Wrist    : "); Serial.print(wristCenter);
-  Serial.print(" + pitch correction: "); Serial.println(currentPitch);
-  Serial.println("--------------------------");
+  Serial.println(&quot;----- Current Angles -----&quot;);
+  Serial.print(&quot;  1) Base     : &quot;); Serial.println(baseAngle);
+  Serial.print(&quot;  2) Shoulder : &quot;); Serial.println(shoulderAngle);
+  Serial.print(&quot;  3) Elbow    : &quot;); Serial.println(elbowAngle);
+  Serial.print(&quot;  4) Wrist    : &quot;); Serial.print(wristCenter);
+  Serial.print(&quot; + pitch correction: &quot;); Serial.println(currentPitch);
+  Serial.println(&quot;--------------------------&quot;);
 }
 
 // ---------- Main Loop ----------
 
 void loop() {
   if (digitalRead(CALIBRATE_BTN) == LOW) {
-    Serial.println("Re-calibrating...");
+    Serial.println(&quot;Re-calibrating...&quot;);
     calibrate();
     delay(500);
   }
@@ -740,9 +730,7 @@ void loop() {
   updateWrist();
 
   delay(20);
-}
-```
-
+}</code></pre>
 </div>
 </details>
 
@@ -755,10 +743,8 @@ Test firmware for validating the camera-to-Arduino communication loop. Accepts v
 <details>
 <summary>Arduino C | 203 lines</summary>
 <div class="code-scroll">
-
-```cpp
-#include <Wire.h>
-#include <Servo.h>
+<pre><code>#include &lt;Wire.h&gt;
+#include &lt;Servo.h&gt;
 
 // MPU6050
 const int MPU_ADDR = 0x68;
@@ -809,13 +795,13 @@ void setup() {
   delay(500);
   calibrate();
 
-  Serial.println("=== Arm Controller Ready ===");
-  Serial.println("Format: <servo> <angle>");
-  Serial.println("  1=Base  2=Shoulder  3=Elbow");
-  Serial.println("  Wrist is auto-leveled");
-  Serial.println("Type 'cal' to re-zero IMU");
-  Serial.println("Type 'status' for current angles");
-  Serial.println("============================\n");
+  Serial.println(&quot;=== Arm Controller Ready ===&quot;);
+  Serial.println(&quot;Format: &lt;servo&gt; &lt;angle&gt;&quot;);
+  Serial.println(&quot;  1=Base  2=Shoulder  3=Elbow&quot;);
+  Serial.println(&quot;  Wrist is auto-leveled&quot;);
+  Serial.println(&quot;Type &#x27;cal&#x27; to re-zero IMU&quot;);
+  Serial.println(&quot;Type &#x27;status&#x27; for current angles&quot;);
+  Serial.println(&quot;============================\n&quot;);
 }
 
 // ---------- MPU6050 ----------
@@ -826,9 +812,9 @@ void readMPU() {
   Wire.endTransmission(false);
   Wire.requestFrom(MPU_ADDR, 6, true);
 
-  accelX = (Wire.read() << 8 | Wire.read()) / 16384.0;
-  accelY = (Wire.read() << 8 | Wire.read()) / 16384.0;
-  accelZ = (Wire.read() << 8 | Wire.read()) / 16384.0;
+  accelX = (Wire.read() &lt;&lt; 8 | Wire.read()) / 16384.0;
+  accelY = (Wire.read() &lt;&lt; 8 | Wire.read()) / 16384.0;
+  accelZ = (Wire.read() &lt;&lt; 8 | Wire.read()) / 16384.0;
 }
 
 float getPitch() {
@@ -837,13 +823,13 @@ float getPitch() {
 
 void calibrate() {
   float sum = 0;
-  for (int i = 0; i < 50; i++) {
+  for (int i = 0; i &lt; 50; i++) {
     readMPU();
     sum += getPitch();
     delay(10);
   }
   pitchOffset = sum / 50.0;
-  Serial.print("Calibrated. Offset: ");
+  Serial.print(&quot;Calibrated. Offset: &quot;);
   Serial.println(pitchOffset);
 }
 
@@ -862,57 +848,57 @@ void updateWrist() {
 void handleSerial() {
   if (!Serial.available()) return;
 
-  String input = Serial.readStringUntil('\n');
+  String input = Serial.readStringUntil(&#x27;\n&#x27;);
   input.trim();
 
-  if (input.equalsIgnoreCase("cal")) {
-    Serial.println("Re-calibrating...");
+  if (input.equalsIgnoreCase(&quot;cal&quot;)) {
+    Serial.println(&quot;Re-calibrating...&quot;);
     calibrate();
     return;
   }
 
-  if (input.equalsIgnoreCase("status")) {
+  if (input.equalsIgnoreCase(&quot;status&quot;)) {
     printStatus();
     return;
   }
 
   // BASE LEFT and BASE RIGHT from Python
-  if (input.startsWith("BASE LEFT")) {
+  if (input.startsWith(&quot;BASE LEFT&quot;)) {
     int speed = input.substring(10).toInt();
-    if (speed <= 0) speed = 5;
+    if (speed &lt;= 0) speed = 5;
     baseAngle = constrain(baseAngle - speed, 0, 180);
     baseServo.write(baseAngle);
-    Serial.print("Base Left -> ");
+    Serial.print(&quot;Base Left -&gt; &quot;);
     Serial.println(baseAngle);
     return;
   }
 
-  if (input.startsWith("BASE RIGHT")) {
+  if (input.startsWith(&quot;BASE RIGHT&quot;)) {
     int speed = input.substring(11).toInt();
-    if (speed <= 0) speed = 5;
+    if (speed &lt;= 0) speed = 5;
     baseAngle = constrain(baseAngle + speed, 0, 180);
     baseServo.write(baseAngle);
-    Serial.print("Base Right -> ");
+    Serial.print(&quot;Base Right -&gt; &quot;);
     Serial.println(baseAngle);
     return;
   }
 
   // Manual servo control
-  int spaceIndex = input.indexOf(' ');
+  int spaceIndex = input.indexOf(&#x27; &#x27;);
   if (spaceIndex == -1) {
-    Serial.println("Invalid format. Use: <servo> <angle>");
+    Serial.println(&quot;Invalid format. Use: &lt;servo&gt; &lt;angle&gt;&quot;);
     return;
   }
 
   int servoNum = input.substring(0, spaceIndex).toInt();
   int angle    = input.substring(spaceIndex + 1).toInt();
 
-  if (servoNum < 1 || servoNum > 3) {
-    Serial.println("Servo must be 1-3. Wrist is automatic.");
+  if (servoNum &lt; 1 || servoNum &gt; 3) {
+    Serial.println(&quot;Servo must be 1-3. Wrist is automatic.&quot;);
     return;
   }
-  if (angle < 0 || angle > 180) {
-    Serial.println("Angle must be 0-180.");
+  if (angle &lt; 0 || angle &gt; 180) {
+    Serial.println(&quot;Angle must be 0-180.&quot;);
     return;
   }
 
@@ -920,38 +906,38 @@ void handleSerial() {
     case 1:
       baseAngle = angle;
       baseServo.write(angle);
-      Serial.print("Base -> ");
+      Serial.print(&quot;Base -&gt; &quot;);
       break;
     case 2:
       shoulderAngle = angle;
       shoulderServo.write(angle);
-      Serial.print("Shoulder -> ");
+      Serial.print(&quot;Shoulder -&gt; &quot;);
       break;
     case 3:
       elbowAngle = angle;
       elbowServo.write(angle);
-      Serial.print("Elbow -> ");
+      Serial.print(&quot;Elbow -&gt; &quot;);
       break;
   }
   Serial.print(angle);
-  Serial.println(" deg");
+  Serial.println(&quot; deg&quot;);
 }
 
 void printStatus() {
-  Serial.println("----- Current Angles -----");
-  Serial.print("  1) Base     : "); Serial.println(baseAngle);
-  Serial.print("  2) Shoulder : "); Serial.println(shoulderAngle);
-  Serial.print("  3) Elbow    : "); Serial.println(elbowAngle);
-  Serial.print("  4) Wrist    : "); Serial.print(wristCenter);
-  Serial.print(" + pitch correction: "); Serial.println(currentPitch);
-  Serial.println("--------------------------");
+  Serial.println(&quot;----- Current Angles -----&quot;);
+  Serial.print(&quot;  1) Base     : &quot;); Serial.println(baseAngle);
+  Serial.print(&quot;  2) Shoulder : &quot;); Serial.println(shoulderAngle);
+  Serial.print(&quot;  3) Elbow    : &quot;); Serial.println(elbowAngle);
+  Serial.print(&quot;  4) Wrist    : &quot;); Serial.print(wristCenter);
+  Serial.print(&quot; + pitch correction: &quot;); Serial.println(currentPitch);
+  Serial.println(&quot;--------------------------&quot;);
 }
 
 // ---------- Main Loop ----------
 
 void loop() {
   if (digitalRead(CALIBRATE_BTN) == LOW) {
-    Serial.println("Re-calibrating...");
+    Serial.println(&quot;Re-calibrating...&quot;);
     calibrate();
     delay(500);
   }
@@ -960,9 +946,7 @@ void loop() {
   updateWrist();
 
   delay(20);
-}
-```
-
+}</code></pre>
 </div>
 </details>
 
@@ -975,9 +959,7 @@ The original manual-drive firmware written for the L293D motor shield (before it
 <details>
 <summary>Arduino C | 224 lines</summary>
 <div class="code-scroll">
-
-```cpp
-// PickMasters — ManualDrive firmware
+<pre><code>// PickMasters — ManualDrive firmware
 // Hardware: Arduino + L293D Motor Shield (Adafruit v1 / AFMotor library)
 //
 // Pin usage (analog pins consumed first per design requirement):
@@ -992,17 +974,17 @@ The original manual-drive firmware written for the L293D motor shield (before it
 //   Remaining free PWM: 9, 10, 13.
 //
 // Serial protocol (9600 baud, newline-terminated):
-//   M <left> <right>   — DC motor speeds, -255..255  (differential drive)
-//   2 <angle>          — Shoulder servo, 0..180 deg
-//   3 <angle>          — Elbow servo,    0..180 deg
+//   M &lt;left&gt; &lt;right&gt;   — DC motor speeds, -255..255  (differential drive)
+//   2 &lt;angle&gt;          — Shoulder servo, 0..180 deg
+//   3 &lt;angle&gt;          — Elbow servo,    0..180 deg
 //   P 1 / P 0          — Pump relay ON / OFF
 //   cal                — Re-zero IMU pitch
 //   stop               — Stop motors
 //   status             — Print all joint states
 
-#include <Wire.h>
-#include <Servo.h>
-#include <AFMotor.h>   // Adafruit Motor Shield v1 library
+#include &lt;Wire.h&gt;
+#include &lt;Servo.h&gt;
+#include &lt;AFMotor.h&gt;   // Adafruit Motor Shield v1 library
 
 // ── Pin definitions ──────────────────────────────────────────────────────────
 #define PUMP_PIN      A0
@@ -1034,7 +1016,7 @@ unsigned long lastIMU    = 0;
 bool          prevCalBtn = HIGH;  // HIGH = not pressed (PULLUP)
 
 // ── Serial receive buffer ─────────────────────────────────────────────────────
-String serialBuf = "";
+String serialBuf = &quot;&quot;;
 
 // ─────────────────────────────────────────────────────────────────────────────
 void setup() {
@@ -1070,7 +1052,7 @@ void setup() {
   delay(200);
 
   calibrateIMU();
-  Serial.println("PickMasters ready");
+  Serial.println(&quot;PickMasters ready&quot;);
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -1078,7 +1060,7 @@ void loop() {
   handleSerial();
   handleCalButton();
 
-  if (millis() - lastIMU >= 20) {   // 50 Hz wrist update
+  if (millis() - lastIMU &gt;= 20) {   // 50 Hz wrist update
     lastIMU = millis();
     updateWrist();
   }
@@ -1088,10 +1070,10 @@ void loop() {
 void handleSerial() {
   while (Serial.available()) {
     char c = (char)Serial.read();
-    if (c == '\n') {
+    if (c == &#x27;\n&#x27;) {
       parseCommand(serialBuf);
-      serialBuf = "";
-    } else if (c != '\r') {
+      serialBuf = &quot;&quot;;
+    } else if (c != &#x27;\r&#x27;) {
       serialBuf += c;
     }
   }
@@ -1101,42 +1083,42 @@ void parseCommand(String cmd) {
   cmd.trim();
   if (cmd.length() == 0) return;
 
-  if (cmd.startsWith("M ")) {
-    int sep = cmd.indexOf(' ', 2);
-    if (sep < 0) return;
+  if (cmd.startsWith(&quot;M &quot;)) {
+    int sep = cmd.indexOf(&#x27; &#x27;, 2);
+    if (sep &lt; 0) return;
     int l = cmd.substring(2, sep).toInt();
     int r = cmd.substring(sep + 1).toInt();
     driveMotors(l, r);
 
-  } else if (cmd.startsWith("P ")) {
+  } else if (cmd.startsWith(&quot;P &quot;)) {
     bool on = (cmd.substring(2).toInt() != 0);
     digitalWrite(PUMP_PIN, on ? HIGH : LOW);
-    Serial.println(on ? "Pump ON" : "Pump OFF");
+    Serial.println(on ? &quot;Pump ON&quot; : &quot;Pump OFF&quot;);
 
-  } else if (cmd.startsWith("2 ")) {
+  } else if (cmd.startsWith(&quot;2 &quot;)) {
     shoulderAngle = constrain(cmd.substring(2).toInt(), 0, 180);
     shoulderServo.write(shoulderAngle);
-    Serial.println("Shoulder -> " + String(shoulderAngle));
+    Serial.println(&quot;Shoulder -&gt; &quot; + String(shoulderAngle));
 
-  } else if (cmd.startsWith("3 ")) {
+  } else if (cmd.startsWith(&quot;3 &quot;)) {
     elbowAngle = constrain(cmd.substring(2).toInt(), 0, 180);
     elbowServo.write(elbowAngle);
-    Serial.println("Elbow -> " + String(elbowAngle));
+    Serial.println(&quot;Elbow -&gt; &quot; + String(elbowAngle));
 
-  } else if (cmd == "cal") {
+  } else if (cmd == &quot;cal&quot;) {
     calibrateIMU();
-    Serial.println("IMU calibrated");
+    Serial.println(&quot;IMU calibrated&quot;);
 
-  } else if (cmd == "stop") {
+  } else if (cmd == &quot;stop&quot;) {
     driveMotors(0, 0);
-    Serial.println("Motors stopped");
+    Serial.println(&quot;Motors stopped&quot;);
 
-  } else if (cmd == "status") {
-    Serial.println("----- Status -----");
-    Serial.println("Shoulder : " + String(shoulderAngle));
-    Serial.println("Elbow    : " + String(elbowAngle));
-    Serial.println("Wrist    : " + String(wristAngle) + " (auto)");
-    Serial.println("------------------");
+  } else if (cmd == &quot;status&quot;) {
+    Serial.println(&quot;----- Status -----&quot;);
+    Serial.println(&quot;Shoulder : &quot; + String(shoulderAngle));
+    Serial.println(&quot;Elbow    : &quot; + String(elbowAngle));
+    Serial.println(&quot;Wrist    : &quot; + String(wristAngle) + &quot; (auto)&quot;);
+    Serial.println(&quot;------------------&quot;);
   }
 }
 
@@ -1146,11 +1128,11 @@ void driveMotors(int l, int r) {
   setMotor(motorRight, r);
 }
 
-void setMotor(AF_DCMotor &m, int spd) {
-  if (spd > 0) {
+void setMotor(AF_DCMotor &amp;m, int spd) {
+  if (spd &gt; 0) {
     m.setSpeed(min(spd, 255));
     m.run(FORWARD);
-  } else if (spd < 0) {
+  } else if (spd &lt; 0) {
     m.setSpeed(min(-spd, 255));
     m.run(BACKWARD);
   } else {
@@ -1170,9 +1152,9 @@ float readPitch() {
   Wire.endTransmission(false);
   Wire.requestFrom((uint8_t)MPU_ADDR, (uint8_t)6, (uint8_t)true);
 
-  int16_t ax = ((int16_t)Wire.read() << 8) | Wire.read();
-  int16_t ay = ((int16_t)Wire.read() << 8) | Wire.read();
-  int16_t az = ((int16_t)Wire.read() << 8) | Wire.read();
+  int16_t ax = ((int16_t)Wire.read() &lt;&lt; 8) | Wire.read();
+  int16_t ay = ((int16_t)Wire.read() &lt;&lt; 8) | Wire.read();
+  int16_t az = ((int16_t)Wire.read() &lt;&lt; 8) | Wire.read();
 
   float ax_g = ax / 16384.0;
   float ay_g = ay / 16384.0;
@@ -1190,14 +1172,12 @@ void updateWrist() {
 // ── Hardware calibration button ───────────────────────────────────────────────
 void handleCalButton() {
   bool btn = digitalRead(CAL_BUTTON);
-  if (btn == LOW && prevCalBtn == HIGH) {  // falling edge = pressed
+  if (btn == LOW &amp;&amp; prevCalBtn == HIGH) {  // falling edge = pressed
     calibrateIMU();
-    Serial.println("IMU calibrated (button)");
+    Serial.println(&quot;IMU calibrated (button)&quot;);
   }
   prevCalBtn = btn;
-}
-```
-
+}</code></pre>
 </div>
 </details>
 
@@ -1210,10 +1190,8 @@ Standalone wrist auto-levelling test. Reads the MPU6050 over I²C, computes pitc
 <details>
 <summary>Arduino C | 100 lines</summary>
 <div class="code-scroll">
-
-```cpp
-#include <Wire.h>
-#include <Servo.h>
+<pre><code>#include &lt;Wire.h&gt;
+#include &lt;Servo.h&gt;
 
 const int MPU_ADDR = 0x68;
 const int WRIST_PIN = 9;
@@ -1245,9 +1223,9 @@ void setup() {
   delay(500); // Let sensor settle
   calibrate();
 
-  Serial.println("Wrist Leveling Active");
-  Serial.println("Type 'cal' to re-zero");
-  Serial.println("======================");
+  Serial.println(&quot;Wrist Leveling Active&quot;);
+  Serial.println(&quot;Type &#x27;cal&#x27; to re-zero&quot;);
+  Serial.println(&quot;======================&quot;);
 }
 
 void readMPU() {
@@ -1256,9 +1234,9 @@ void readMPU() {
   Wire.endTransmission(false);
   Wire.requestFrom(MPU_ADDR, 6, true); // Only need accel data
 
-  accelX = (Wire.read() << 8 | Wire.read()) / 16384.0;
-  accelY = (Wire.read() << 8 | Wire.read()) / 16384.0;
-  accelZ = (Wire.read() << 8 | Wire.read()) / 16384.0;
+  accelX = (Wire.read() &lt;&lt; 8 | Wire.read()) / 16384.0;
+  accelY = (Wire.read() &lt;&lt; 8 | Wire.read()) / 16384.0;
+  accelZ = (Wire.read() &lt;&lt; 8 | Wire.read()) / 16384.0;
 }
 
 float getPitch() {
@@ -1268,30 +1246,30 @@ float getPitch() {
 void calibrate() {
   // Average multiple readings for a stable offset
   float sum = 0;
-  for (int i = 0; i < 50; i++) {
+  for (int i = 0; i &lt; 50; i++) {
     readMPU();
     sum += getPitch();
     delay(10);
   }
   pitchOffset = sum / 50.0;
-  Serial.print("Calibrated. Offset: ");
+  Serial.print(&quot;Calibrated. Offset: &quot;);
   Serial.println(pitchOffset);
 }
 
 void loop() {
   // Check for calibration button
   if (digitalRead(CALIBRATE_BTN) == LOW) {
-    Serial.println("Re-calibrating...");
+    Serial.println(&quot;Re-calibrating...&quot;);
     calibrate();
     delay(500); // Debounce
   }
 
   // Check for serial calibration command
   if (Serial.available()) {
-    String input = Serial.readStringUntil('\n');
+    String input = Serial.readStringUntil(&#x27;\n&#x27;);
     input.trim();
-    if (input.equalsIgnoreCase("cal")) {
-      Serial.println("Re-calibrating...");
+    if (input.equalsIgnoreCase(&quot;cal&quot;)) {
+      Serial.println(&quot;Re-calibrating...&quot;);
       calibrate();
     }
   }
@@ -1306,15 +1284,13 @@ void loop() {
 
   wristServo.write(servoAngle);
 
-  Serial.print("Pitch: ");
+  Serial.print(&quot;Pitch: &quot;);
   Serial.print(currentPitch);
-  Serial.print("  Servo: ");
+  Serial.print(&quot;  Servo: &quot;);
   Serial.println(servoAngle);
 
   delay(20); // 50Hz update rate
-}
-```
-
+}</code></pre>
 </div>
 </details>
 
@@ -1327,27 +1303,25 @@ Earlier version of the automatic-mode firmware. Simpler command set without the 
 <details>
 <summary>Arduino C | 131 lines</summary>
 <div class="code-scroll">
-
-```cpp
-// PickMasters — PickAndMove
+<pre><code>// PickMasters — PickAndMove
 // =========================
 // Receives motion commands from detect_and_move.py over serial and drives the
-// robot's TWO DC motors (via an L298N) so the camera centres an item inside the
+// robot&#x27;s TWO DC motors (via an L298N) so the camera centres an item inside the
 // target box.
 //
-//   * Spinning the base   -> PIVOT the wheels (left motor and right motor turn
+//   * Spinning the base   -&gt; PIVOT the wheels (left motor and right motor turn
 //                            in opposite directions) to line the item up on the
 //                            VERTICAL line (X axis).
-//   * Moving the base      -> DRIVE both wheels the same direction to line the
+//   * Moving the base      -&gt; DRIVE both wheels the same direction to line the
 //                            item up on the HORIZONTAL line (Y axis).
 //
 // Only the DC motors move here — the servos are left alone.
 //
 // Serial protocol (one command per line, 9600 baud):
-//   PIVOT_LEFT  <speed>    spin base left   (speed = PWM 0-255)
-//   PIVOT_RIGHT <speed>    spin base right
-//   DRIVE_FWD   <speed>    move base forward
-//   DRIVE_BACK  <speed>    move base backward
+//   PIVOT_LEFT  &lt;speed&gt;    spin base left   (speed = PWM 0-255)
+//   PIVOT_RIGHT &lt;speed&gt;    spin base right
+//   DRIVE_FWD   &lt;speed&gt;    move base forward
+//   DRIVE_BACK  &lt;speed&gt;    move base backward
 //   STOP                   stop both motors
 //
 // Motion is PULSE based: each command runs the motors for PULSE_MS then stops
@@ -1374,20 +1348,20 @@ void setup() {
   pinMode(ENB, OUTPUT);  pinMode(IN3, OUTPUT);  pinMode(IN4, OUTPUT);
   stopMotors();
 
-  Serial.println(F("=== PickAndMove ready ==="));
-  Serial.println(F("Commands: PIVOT_LEFT/PIVOT_RIGHT/DRIVE_FWD/DRIVE_BACK <speed>, STOP"));
+  Serial.println(F(&quot;=== PickAndMove ready ===&quot;));
+  Serial.println(F(&quot;Commands: PIVOT_LEFT/PIVOT_RIGHT/DRIVE_FWD/DRIVE_BACK &lt;speed&gt;, STOP&quot;));
 }
 
 // ── Low level motor helpers ─────────────────────────────────────────────────
 void setMotorLeft(int dir, int speed) {
-  if (dir > 0)      { digitalWrite(IN1, HIGH); digitalWrite(IN2, LOW);  analogWrite(ENA, speed); }
-  else if (dir < 0) { digitalWrite(IN1, LOW);  digitalWrite(IN2, HIGH); analogWrite(ENA, speed); }
+  if (dir &gt; 0)      { digitalWrite(IN1, HIGH); digitalWrite(IN2, LOW);  analogWrite(ENA, speed); }
+  else if (dir &lt; 0) { digitalWrite(IN1, LOW);  digitalWrite(IN2, HIGH); analogWrite(ENA, speed); }
   else              { digitalWrite(IN1, LOW);  digitalWrite(IN2, LOW);  analogWrite(ENA, 0); }
 }
 
 void setMotorRight(int dir, int speed) {
-  if (dir > 0)      { digitalWrite(IN3, HIGH); digitalWrite(IN4, LOW);  analogWrite(ENB, speed); }
-  else if (dir < 0) { digitalWrite(IN3, LOW);  digitalWrite(IN4, HIGH); analogWrite(ENB, speed); }
+  if (dir &gt; 0)      { digitalWrite(IN3, HIGH); digitalWrite(IN4, LOW);  analogWrite(ENB, speed); }
+  else if (dir &lt; 0) { digitalWrite(IN3, LOW);  digitalWrite(IN4, HIGH); analogWrite(ENB, speed); }
   else              { digitalWrite(IN3, LOW);  digitalWrite(IN4, LOW);  analogWrite(ENB, 0); }
 }
 
@@ -1409,7 +1383,7 @@ void driveForward(int speed) { setMotorLeft( 1, speed); setMotorRight( 1, speed)
 void driveBackward(int speed){ setMotorLeft(-1, speed); setMotorRight(-1, speed); startPulse(); }
 
 // ── Serial parsing ───────────────────────────────────────────────────────────
-int parseSpeed(const String &input, int prefixLen) {
+int parseSpeed(const String &amp;input, int prefixLen) {
   int speed = input.substring(prefixLen).toInt();
   return constrain(speed, 0, 255);
 }
@@ -1417,36 +1391,36 @@ int parseSpeed(const String &input, int prefixLen) {
 void handleSerial() {
   if (!Serial.available()) return;
 
-  String input = Serial.readStringUntil('\n');
+  String input = Serial.readStringUntil(&#x27;\n&#x27;);
   input.trim();
   if (input.length() == 0) return;
 
-  if (input.equalsIgnoreCase("STOP")) {
+  if (input.equalsIgnoreCase(&quot;STOP&quot;)) {
     stopMotors();
-    Serial.println(F("STOP"));
+    Serial.println(F(&quot;STOP&quot;));
   }
-  else if (input.startsWith("PIVOT_LEFT")) {
+  else if (input.startsWith(&quot;PIVOT_LEFT&quot;)) {
     int s = parseSpeed(input, 10);
     pivotLeft(s);
-    Serial.print(F("PIVOT_LEFT "));  Serial.println(s);
+    Serial.print(F(&quot;PIVOT_LEFT &quot;));  Serial.println(s);
   }
-  else if (input.startsWith("PIVOT_RIGHT")) {
+  else if (input.startsWith(&quot;PIVOT_RIGHT&quot;)) {
     int s = parseSpeed(input, 11);
     pivotRight(s);
-    Serial.print(F("PIVOT_RIGHT ")); Serial.println(s);
+    Serial.print(F(&quot;PIVOT_RIGHT &quot;)); Serial.println(s);
   }
-  else if (input.startsWith("DRIVE_FWD")) {
+  else if (input.startsWith(&quot;DRIVE_FWD&quot;)) {
     int s = parseSpeed(input, 9);
     driveForward(s);
-    Serial.print(F("DRIVE_FWD "));   Serial.println(s);
+    Serial.print(F(&quot;DRIVE_FWD &quot;));   Serial.println(s);
   }
-  else if (input.startsWith("DRIVE_BACK")) {
+  else if (input.startsWith(&quot;DRIVE_BACK&quot;)) {
     int s = parseSpeed(input, 10);
     driveBackward(s);
-    Serial.print(F("DRIVE_BACK "));  Serial.println(s);
+    Serial.print(F(&quot;DRIVE_BACK &quot;));  Serial.println(s);
   }
   else {
-    Serial.print(F("Unknown command: "));
+    Serial.print(F(&quot;Unknown command: &quot;));
     Serial.println(input);
   }
 }
@@ -1456,12 +1430,10 @@ void loop() {
   handleSerial();
 
   // Auto-stop when the current pulse expires.
-  if (stopAt != 0 && millis() >= stopAt) {
+  if (stopAt != 0 &amp;&amp; millis() &gt;= stopAt) {
     stopMotors();
   }
-}
-```
-
+}</code></pre>
 </div>
 </details>
 
@@ -1474,9 +1446,7 @@ Minimal sketch to sweep two servos through their range. Used to verify servo wir
 <details>
 <summary>Arduino C | 79 lines</summary>
 <div class="code-scroll">
-
-```cpp
-#include <Servo.h>
+<pre><code>#include &lt;Servo.h&gt;
 
 Servo baseServo;
 Servo shoulderServo;
@@ -1496,40 +1466,40 @@ void setup() {
   baseServo.write(baseAngle);
   shoulderServo.write(shoulderAngle);
 
-  Serial.println("=== 2-DOF Servo Controller ===");
-  Serial.println("Format:  <servo> <angle>");
-  Serial.println("  servo : 1=Base  2=Shoulder");
-  Serial.println("  angle : 0 - 270");
-  Serial.println("Example: 2 45   (moves Shoulder to 45 deg)");
-  Serial.println("Type 'status' to see current angles.");
-  Serial.println("==============================\n");
+  Serial.println(&quot;=== 2-DOF Servo Controller ===&quot;);
+  Serial.println(&quot;Format:  &lt;servo&gt; &lt;angle&gt;&quot;);
+  Serial.println(&quot;  servo : 1=Base  2=Shoulder&quot;);
+  Serial.println(&quot;  angle : 0 - 270&quot;);
+  Serial.println(&quot;Example: 2 45   (moves Shoulder to 45 deg)&quot;);
+  Serial.println(&quot;Type &#x27;status&#x27; to see current angles.&quot;);
+  Serial.println(&quot;==============================\n&quot;);
 }
 
 void loop() {
   if (Serial.available()) {
-    String input = Serial.readStringUntil('\n');
+    String input = Serial.readStringUntil(&#x27;\n&#x27;);
     input.trim();
 
-    if (input.equalsIgnoreCase("status")) {
+    if (input.equalsIgnoreCase(&quot;status&quot;)) {
       printStatus();
       return;
     }
 
-    int spaceIndex = input.indexOf(' ');
+    int spaceIndex = input.indexOf(&#x27; &#x27;);
     if (spaceIndex == -1) {
-      Serial.println("Invalid format. Use: <servo> <angle>");
+      Serial.println(&quot;Invalid format. Use: &lt;servo&gt; &lt;angle&gt;&quot;);
       return;
     }
 
     int servoNum = input.substring(0, spaceIndex).toInt();
     int angle    = input.substring(spaceIndex + 1).toInt();
 
-    if (servoNum < 1 || servoNum > 2) {
-      Serial.println("Servo must be 1 or 2.");
+    if (servoNum &lt; 1 || servoNum &gt; 2) {
+      Serial.println(&quot;Servo must be 1 or 2.&quot;);
       return;
     }
-    if (angle < 0 || angle > 270) {
-      Serial.println("Angle must be 0-270.");
+    if (angle &lt; 0 || angle &gt; 270) {
+      Serial.println(&quot;Angle must be 0-270.&quot;);
       return;
     }
 
@@ -1537,27 +1507,25 @@ void loop() {
       case 1:
         baseAngle = angle;
         baseServo.write(angle);
-        Serial.print("Base -> ");
+        Serial.print(&quot;Base -&gt; &quot;);
         break;
       case 2:
         shoulderAngle = angle;
         shoulderServo.write(angle);
-        Serial.print("Shoulder -> ");
+        Serial.print(&quot;Shoulder -&gt; &quot;);
         break;
     }
     Serial.print(angle);
-    Serial.println(" deg");
+    Serial.println(&quot; deg&quot;);
   }
 }
 
 void printStatus() {
-  Serial.println("----- Current Angles -----");
-  Serial.print("  1) Base     : "); Serial.println(baseAngle);
-  Serial.print("  2) Shoulder : "); Serial.println(shoulderAngle);
-  Serial.println("--------------------------");
-}
-```
-
+  Serial.println(&quot;----- Current Angles -----&quot;);
+  Serial.print(&quot;  1) Base     : &quot;); Serial.println(baseAngle);
+  Serial.print(&quot;  2) Shoulder : &quot;); Serial.println(shoulderAngle);
+  Serial.println(&quot;--------------------------&quot;);
+}</code></pre>
 </div>
 </details>
 
@@ -1570,9 +1538,7 @@ IMU sensor test. Reads raw accelerometer and gyroscope values from the MPU6050 a
 <details>
 <summary>Arduino C | 66 lines</summary>
 <div class="code-scroll">
-
-```cpp
-#include <Wire.h>
+<pre><code>#include &lt;Wire.h&gt;
 
 const int MPU_ADDR = 0x68;
 
@@ -1592,23 +1558,23 @@ void setup() {
 
   delay(100); // Give the sensor time to wake up
 
-  // Verify it's awake by reading WHO_AM_I register
+  // Verify it&#x27;s awake by reading WHO_AM_I register
   Wire.beginTransmission(MPU_ADDR);
   Wire.write(0x75);
   Wire.endTransmission(false);
   Wire.requestFrom(MPU_ADDR, 1, true);
   byte whoAmI = Wire.read();
 
-  Serial.print("WHO_AM_I: 0x");
+  Serial.print(&quot;WHO_AM_I: 0x&quot;);
   Serial.println(whoAmI, HEX);
 
   if (whoAmI == 0x68) {
-    Serial.println("MPU6050 confirmed and ready!");
+    Serial.println(&quot;MPU6050 confirmed and ready!&quot;);
   } else {
-    Serial.println("Unexpected response — check sensor.");
+    Serial.println(&quot;Unexpected response — check sensor.&quot;);
   }
 
-  Serial.println("==============");
+  Serial.println(&quot;==============&quot;);
 }
 
 void loop() {
@@ -1617,30 +1583,28 @@ void loop() {
   Wire.endTransmission(false);
   Wire.requestFrom(MPU_ADDR, 14, true);
 
-  accelX = (Wire.read() << 8 | Wire.read()) / 16384.0;
-  accelY = (Wire.read() << 8 | Wire.read()) / 16384.0;
-  accelZ = (Wire.read() << 8 | Wire.read()) / 16384.0;
-  temp   = (Wire.read() << 8 | Wire.read()) / 340.0 + 36.53;
-  gyroX  = (Wire.read() << 8 | Wire.read()) / 131.0;
-  gyroY  = (Wire.read() << 8 | Wire.read()) / 131.0;
-  gyroZ  = (Wire.read() << 8 | Wire.read()) / 131.0;
+  accelX = (Wire.read() &lt;&lt; 8 | Wire.read()) / 16384.0;
+  accelY = (Wire.read() &lt;&lt; 8 | Wire.read()) / 16384.0;
+  accelZ = (Wire.read() &lt;&lt; 8 | Wire.read()) / 16384.0;
+  temp   = (Wire.read() &lt;&lt; 8 | Wire.read()) / 340.0 + 36.53;
+  gyroX  = (Wire.read() &lt;&lt; 8 | Wire.read()) / 131.0;
+  gyroY  = (Wire.read() &lt;&lt; 8 | Wire.read()) / 131.0;
+  gyroZ  = (Wire.read() &lt;&lt; 8 | Wire.read()) / 131.0;
 
-  Serial.print("Accel X: "); Serial.print(accelX);
-  Serial.print("  Y: ");     Serial.print(accelY);
-  Serial.print("  Z: ");     Serial.println(accelZ);
+  Serial.print(&quot;Accel X: &quot;); Serial.print(accelX);
+  Serial.print(&quot;  Y: &quot;);     Serial.print(accelY);
+  Serial.print(&quot;  Z: &quot;);     Serial.println(accelZ);
 
-  Serial.print("Gyro  X: "); Serial.print(gyroX);
-  Serial.print("  Y: ");     Serial.print(gyroY);
-  Serial.print("  Z: ");     Serial.println(gyroZ);
+  Serial.print(&quot;Gyro  X: &quot;); Serial.print(gyroX);
+  Serial.print(&quot;  Y: &quot;);     Serial.print(gyroY);
+  Serial.print(&quot;  Z: &quot;);     Serial.println(gyroZ);
 
-  Serial.print("Temp: ");    Serial.print(temp);
-  Serial.println(" C");
-  Serial.println("---");
+  Serial.print(&quot;Temp: &quot;);    Serial.print(temp);
+  Serial.println(&quot; C&quot;);
+  Serial.println(&quot;---&quot;);
 
   delay(500);
-}
-```
-
+}</code></pre>
 </div>
 </details>
 
@@ -1653,9 +1617,7 @@ Minimal pump relay test. Toggles the vacuum pump on and off via serial commands 
 <details>
 <summary>Arduino C | 52 lines</summary>
 <div class="code-scroll">
-
-```cpp
-// PickMasters — PumpCheck
+<pre><code>// PickMasters — PumpCheck
 // Minimal firmware to verify the gamepad controller toggles the pump over USB
 // serial. No servos, motors, or IMU — so nothing can stall boot or brown out.
 //
@@ -1676,39 +1638,37 @@ byte len = 0;
 void setup() {
   Serial.begin(9600);
   pinMode(PUMP_PIN, OUTPUT);
-  digitalWrite(PUMP_PIN, HIGH);   // active LOW -> OFF at startup
-  Serial.write("PickMasters pump test ready\n");
+  digitalWrite(PUMP_PIN, HIGH);   // active LOW -&gt; OFF at startup
+  Serial.write(&quot;PickMasters pump test ready\n&quot;);
 }
 
 void loop() {
   while (Serial.available()) {
     char c = (char)Serial.read();
-    if (c == '\n') {
-      buf[len] = '\0';
+    if (c == &#x27;\n&#x27;) {
+      buf[len] = &#x27;\0&#x27;;
       handle(buf);
       len = 0;
-    } else if (c != '\r' && len < sizeof(buf) - 1) {
+    } else if (c != &#x27;\r&#x27; &amp;&amp; len &lt; sizeof(buf) - 1) {
       buf[len++] = c;
     }
   }
 }
 
 void handle(char *cmd) {
-  if (strcmp(cmd, "P1") == 0) {
+  if (strcmp(cmd, &quot;P1&quot;) == 0) {
     pumpOn = true;
     digitalWrite(PUMP_PIN, LOW);    // active LOW = ON
-    Serial.write("pump ON\n");
-  } else if (strcmp(cmd, "P0") == 0) {
+    Serial.write(&quot;pump ON\n&quot;);
+  } else if (strcmp(cmd, &quot;P0&quot;) == 0) {
     pumpOn = false;
     digitalWrite(PUMP_PIN, HIGH);   // active LOW = OFF
-    Serial.write("pump OFF\n");
-  } else if (strcmp(cmd, "status") == 0) {
-    Serial.print("PUMP:");
-    Serial.println(pumpOn ? "ON" : "OFF");
+    Serial.write(&quot;pump OFF\n&quot;);
+  } else if (strcmp(cmd, &quot;status&quot;) == 0) {
+    Serial.print(&quot;PUMP:&quot;);
+    Serial.println(pumpOn ? &quot;ON&quot; : &quot;OFF&quot;);
   }
-}
-```
-
+}</code></pre>
 </div>
 </details>
 
@@ -1721,38 +1681,34 @@ Bare-minimum relay toggle. Even simpler than PumpCheck — just turns the relay 
 <details>
 <summary>Arduino C | 27 lines</summary>
 <div class="code-scroll">
-
-```cpp
-const int RELAY_PIN = 7;
+<pre><code>const int RELAY_PIN = 7;
 
 void setup() {
   Serial.begin(9600);
   pinMode(RELAY_PIN, OUTPUT);
   digitalWrite(RELAY_PIN, LOW); // Pump off
 
-  Serial.println("=== Pump Relay Test ===");
-  Serial.println("'on'  - Turn pump on");
-  Serial.println("'off' - Turn pump off");
-  Serial.println("=======================\n");
+  Serial.println(&quot;=== Pump Relay Test ===&quot;);
+  Serial.println(&quot;&#x27;on&#x27;  - Turn pump on&quot;);
+  Serial.println(&quot;&#x27;off&#x27; - Turn pump off&quot;);
+  Serial.println(&quot;=======================\n&quot;);
 }
 
 void loop() {
   if (Serial.available()) {
-    String input = Serial.readStringUntil('\n');
+    String input = Serial.readStringUntil(&#x27;\n&#x27;);
     input.trim();
 
-    if (input.equalsIgnoreCase("on")) {
+    if (input.equalsIgnoreCase(&quot;on&quot;)) {
       digitalWrite(RELAY_PIN, HIGH);
-      Serial.println("Pump ON");
+      Serial.println(&quot;Pump ON&quot;);
     }
-    else if (input.equalsIgnoreCase("off")) {
+    else if (input.equalsIgnoreCase(&quot;off&quot;)) {
       digitalWrite(RELAY_PIN, LOW);
-      Serial.println("Pump OFF");
+      Serial.println(&quot;Pump OFF&quot;);
     }
   }
-}
-```
-
+}</code></pre>
 </div>
 </details>
 
@@ -1765,9 +1721,7 @@ An early Processing sketch that combined gamepad input with basic serial output.
 <details>
 <summary>Processing (Java) | 89 lines</summary>
 <div class="code-scroll">
-
-```java
-import org.gamecontrolplus.*;
+<pre><code>import org.gamecontrolplus.*;
 import org.gamecontrolplus.gui.*;
 import processing.serial.*;
 import net.java.games.input.*;
@@ -1791,10 +1745,10 @@ void setup() {
   frameRate(50);
 
   control = ControlIO.getInstance(this);
-  cont = control.getMatchedDevice("Test4");
+  cont = control.getMatchedDevice(&quot;Test4&quot;);
 
   if (cont == null) {
-    println("Not connected");
+    println(&quot;Not connected&quot;);
     System.exit(-1);
   }
 
@@ -1806,16 +1760,16 @@ void setup() {
 }
 
 public void getUserInput() {
-  float baseInput     = cont.getSlider("ServoBase").getValue();
-  float shoulderInput = cont.getSlider("ServoShoulder").getValue();
-  float elbowInput    = cont.getSlider("ServoElbow").getValue();
-  float wristInput    = cont.getSlider("ServoWrist").getValue();
+  float baseInput     = cont.getSlider(&quot;ServoBase&quot;).getValue();
+  float shoulderInput = cont.getSlider(&quot;ServoShoulder&quot;).getValue();
+  float elbowInput    = cont.getSlider(&quot;ServoElbow&quot;).getValue();
+  float wristInput    = cont.getSlider(&quot;ServoWrist&quot;).getValue();
 
   // Apply deadzone
-  if (abs(baseInput) > deadzone)     baseAngle     += baseInput * speed;
-  if (abs(shoulderInput) > deadzone) shoulderAngle += shoulderInput * speed;
-  if (abs(elbowInput) > deadzone)    elbowAngle    += elbowInput * speed;
-  if (abs(wristInput) > deadzone)    wristAngle    += wristInput * speed;
+  if (abs(baseInput) &gt; deadzone)     baseAngle     += baseInput * speed;
+  if (abs(shoulderInput) &gt; deadzone) shoulderAngle += shoulderInput * speed;
+  if (abs(elbowInput) &gt; deadzone)    elbowAngle    += elbowInput * speed;
+  if (abs(wristInput) &gt; deadzone)    wristAngle    += wristInput * speed;
 
   // Clamp to 0-180
   baseAngle     = constrain(baseAngle, 0, 180);
@@ -1823,8 +1777,8 @@ public void getUserInput() {
   elbowAngle    = constrain(elbowAngle, 0, 180);
   wristAngle    = constrain(wristAngle, 0, 180);
 
-  println("Base: " + baseAngle + "  Shoulder: " + shoulderAngle +
-          "  Elbow: " + elbowAngle + "  Wrist: " + wristAngle);
+  println(&quot;Base: &quot; + baseAngle + &quot;  Shoulder: &quot; + shoulderAngle +
+          &quot;  Elbow: &quot; + elbowAngle + &quot;  Wrist: &quot; + wristAngle);
 }
 
 void draw() {
@@ -1835,9 +1789,7 @@ void draw() {
   arduino.servoWrite(10, (int)shoulderAngle);
   arduino.servoWrite(11, (int)elbowAngle);
   arduino.servoWrite(12, (int)wristAngle);
-}
-```
-
+}</code></pre>
 </div>
 </details>
 
@@ -1850,9 +1802,7 @@ Development version of the manual-control gamepad interface. Full button mapping
 <details>
 <summary>Processing (Java) | 231 lines</summary>
 <div class="code-scroll">
-
-```java
-// PickMasters — DriveControl (manual controller, paired with ArmController.ino)
+<pre><code>// PickMasters — DriveControl (manual controller, paired with ArmController.ino)
 //
 // Bluetooth XINPUT gamepad via GameControlPlus (config: data/PickMasters).
 //
@@ -1864,12 +1814,12 @@ Development version of the manual-control gamepad interface. Full button mapping
 //   Right stick Y         — wrist servo  (digital: full push only, MANUAL mode)
 //   Right stick X         — hand servo   (digital: full push only)
 //   PumpButton            — pump on/off toggle        (rising edge)
-//   CalButton             — IMU re-zero ("cal")       (rising edge)
+//   CalButton             — IMU re-zero (&quot;cal&quot;)       (rising edge)
 //   WristModeButton       — wrist AUTO/MANUAL toggle  (rising edge)
 //
 // Serial: ONE combined message per frame, sent only when something changed
 // and at most every SEND_INTERVAL ms, to avoid flooding the Arduino:
-//   S<shoulder>,<elbow>,<wrist>,<hand>,M<left>,<right>,P<0|1>,W<0|1>\n
+//   S&lt;shoulder&gt;,&lt;elbow&gt;,&lt;wrist&gt;,&lt;hand&gt;,M&lt;left&gt;,&lt;right&gt;,P&lt;0|1&gt;,W&lt;0|1&gt;\n
 
 import org.gamecontrolplus.*;
 import org.gamecontrolplus.gui.*;
@@ -1905,11 +1855,11 @@ boolean prevCalBtn  = false;
 boolean prevModeBtn = false;
 
 // --- Serial throttle: send only on change, at most every SEND_INTERVAL ms ---
-String lastMsg  = "";
+String lastMsg  = &quot;&quot;;
 long   lastSend = 0;
 final int SEND_INTERVAL = 50;
 
-String lastResponse = "";
+String lastResponse = &quot;&quot;;
 
 void setup() {
   size(440, 290);
@@ -1917,13 +1867,13 @@ void setup() {
 
   try {
     control = ControlIO.getInstance(this);
-    cont = control.getMatchedDevice("PickMasters");
+    cont = control.getMatchedDevice(&quot;PickMasters&quot;);
   } catch (Exception e) {
-    println("Warning during controller init: " + e.getMessage());
+    println(&quot;Warning during controller init: &quot; + e.getMessage());
   }
 
   if (cont == null) {
-    println("Controller not found — check data/PickMasters config");
+    println(&quot;Controller not found — check data/PickMasters config&quot;);
     System.exit(-1);
   }
   controllerReady = true;
@@ -1932,37 +1882,37 @@ void setup() {
   printArray(ports);
 
   String portName = null;
-  for (int i = ports.length - 1; i >= 0; i--) {
-    if (!ports[i].equals("COM1")) { portName = ports[i]; break; }
+  for (int i = ports.length - 1; i &gt;= 0; i--) {
+    if (!ports[i].equals(&quot;COM1&quot;)) { portName = ports[i]; break; }
   }
-  if (portName == null && ports.length > 0) portName = ports[0];
+  if (portName == null &amp;&amp; ports.length &gt; 0) portName = ports[0];
 
   if (portName == null) {
-    println("No serial port found — is the Arduino plugged in?");
+    println(&quot;No serial port found — is the Arduino plugged in?&quot;);
     System.exit(-1);
   }
 
-  println("Connecting to " + portName);
+  println(&quot;Connecting to &quot; + portName);
   port = new Serial(this, portName, 9600);
-  port.bufferUntil('\n');
+  port.bufferUntil(&#x27;\n&#x27;);
 
   delay(2000);   // let the Arduino reboot after the port opens
 }
 
 void getUserInput() {
   if (!controllerReady || cont == null) return;
-  float leftX  = cont.getSlider("LeftX").getValue();
-  float leftY  = cont.getSlider("LeftY").getValue();
-  float rightX = cont.getSlider("RightX").getValue();
-  float rightY = cont.getSlider("RightY").getValue();
+  float leftX  = cont.getSlider(&quot;LeftX&quot;).getValue();
+  float leftY  = cont.getSlider(&quot;LeftY&quot;).getValue();
+  float rightX = cont.getSlider(&quot;RightX&quot;).getValue();
+  float rightY = cont.getSlider(&quot;RightY&quot;).getValue();
 
-  if (leftY <= -driveThreshold)      { motorLeft =  1; motorRight =  1; }  // forward
-  else if (leftY >= driveThreshold)  { motorLeft = -1; motorRight = -1; }  // backward
-  else if (leftX >= driveThreshold)  { motorLeft =  1; motorRight = -1; }  // pivot right
-  else if (leftX <= -driveThreshold) { motorLeft = -1; motorRight =  1; }  // pivot left
+  if (leftY &lt;= -driveThreshold)      { motorLeft =  1; motorRight =  1; }  // forward
+  else if (leftY &gt;= driveThreshold)  { motorLeft = -1; motorRight = -1; }  // backward
+  else if (leftX &gt;= driveThreshold)  { motorLeft =  1; motorRight = -1; }  // pivot right
+  else if (leftX &lt;= -driveThreshold) { motorLeft = -1; motorRight =  1; }  // pivot left
   else                               { motorLeft =  0; motorRight =  0; }
 
-  int pos = cont.getHat("Dpad").getPos();
+  int pos = cont.getHat(&quot;Dpad&quot;).getPos();
   boolean dUp    = (pos == 1 || pos == 2 || pos == 3);
   boolean dDown  = (pos == 5 || pos == 6 || pos == 7);
   boolean dRight = (pos == 3 || pos == 4 || pos == 5);
@@ -1974,24 +1924,24 @@ void getUserInput() {
   if (dLeft)  elbowAngle    -= dpadStep;
 
   if (!wristAuto) {
-    if (rightY <= -driveThreshold)     wristAngle += stickStep;
-    else if (rightY >= driveThreshold) wristAngle -= stickStep;
+    if (rightY &lt;= -driveThreshold)     wristAngle += stickStep;
+    else if (rightY &gt;= driveThreshold) wristAngle -= stickStep;
   }
-  if (rightX >= driveThreshold)        handAngle += stickStep;
-  else if (rightX <= -driveThreshold)  handAngle -= stickStep;
+  if (rightX &gt;= driveThreshold)        handAngle += stickStep;
+  else if (rightX &lt;= -driveThreshold)  handAngle -= stickStep;
 
   shoulderAngle = constrain(shoulderAngle, 0, 180);
   elbowAngle    = constrain(elbowAngle,    0, 180);
   wristAngle    = constrain(wristAngle,    0, 180);
   handAngle     = constrain(handAngle,     0, 180);
 
-  boolean pumpBtn = cont.getButton("PumpButton").pressed();
-  boolean calBtn  = cont.getButton("CalButton").pressed();
-  boolean modeBtn = cont.getButton("WristModeButton").pressed();
+  boolean pumpBtn = cont.getButton(&quot;PumpButton&quot;).pressed();
+  boolean calBtn  = cont.getButton(&quot;CalButton&quot;).pressed();
+  boolean modeBtn = cont.getButton(&quot;WristModeButton&quot;).pressed();
 
-  if (pumpBtn && !prevPumpBtn) pumpOn = !pumpOn;
-  if (modeBtn && !prevModeBtn) wristAuto = !wristAuto;
-  if (calBtn && !prevCalBtn)   port.write("cal\n");
+  if (pumpBtn &amp;&amp; !prevPumpBtn) pumpOn = !pumpOn;
+  if (modeBtn &amp;&amp; !prevModeBtn) wristAuto = !wristAuto;
+  if (calBtn &amp;&amp; !prevCalBtn)   port.write(&quot;cal\n&quot;);
 
   prevPumpBtn = pumpBtn;
   prevCalBtn  = calBtn;
@@ -1999,13 +1949,13 @@ void getUserInput() {
 }
 
 void sendState() {
-  String msg = "S" + (int)shoulderAngle + "," + (int)elbowAngle + ","
-                   + (int)wristAngle + "," + (int)handAngle
-             + ",M" + motorLeft + "," + motorRight
-             + ",P" + (pumpOn ? 1 : 0)
-             + ",W" + (wristAuto ? 1 : 0) + "\n";
+  String msg = &quot;S&quot; + (int)shoulderAngle + &quot;,&quot; + (int)elbowAngle + &quot;,&quot;
+                   + (int)wristAngle + &quot;,&quot; + (int)handAngle
+             + &quot;,M&quot; + motorLeft + &quot;,&quot; + motorRight
+             + &quot;,P&quot; + (pumpOn ? 1 : 0)
+             + &quot;,W&quot; + (wristAuto ? 1 : 0) + &quot;\n&quot;;
 
-  if (!msg.equals(lastMsg) && millis() - lastSend >= SEND_INTERVAL) {
+  if (!msg.equals(lastMsg) &amp;&amp; millis() - lastSend &gt;= SEND_INTERVAL) {
     port.write(msg);
     lastMsg  = msg;
     lastSend = millis();
@@ -2016,7 +1966,7 @@ void draw() {
   try {
     getUserInput();
   } catch (java.util.ConcurrentModificationException e) {
-    // skip this frame's input, will re-read next frame
+    // skip this frame&#x27;s input, will re-read next frame
   }
   sendState();
 
@@ -2024,45 +1974,43 @@ void draw() {
 
   fill(255);
   textSize(16);
-  text("PickMasters  —  Manual Mode", 10, 28);
+  text(&quot;PickMasters  —  Manual Mode&quot;, 10, 28);
 
   textSize(14);
   fill(200, 230, 255);
-  text("Shoulder:  " + (int)shoulderAngle + " deg", 10, 60);
-  text("Elbow:     " + (int)elbowAngle + " deg", 10, 82);
-  text("Wrist:     " + (int)wristAngle + " deg", 10, 104);
-  text("Hand:      " + (int)handAngle + " deg", 10, 126);
-  text("Motors:    L " + motorState(motorLeft) + "   R " + motorState(motorRight), 10, 148);
+  text(&quot;Shoulder:  &quot; + (int)shoulderAngle + &quot; deg&quot;, 10, 60);
+  text(&quot;Elbow:     &quot; + (int)elbowAngle + &quot; deg&quot;, 10, 82);
+  text(&quot;Wrist:     &quot; + (int)wristAngle + &quot; deg&quot;, 10, 104);
+  text(&quot;Hand:      &quot; + (int)handAngle + &quot; deg&quot;, 10, 126);
+  text(&quot;Motors:    L &quot; + motorState(motorLeft) + &quot;   R &quot; + motorState(motorRight), 10, 148);
 
   fill(pumpOn ? color(80, 255, 80) : color(255, 80, 80));
-  text("Pump:      " + (pumpOn ? "ON" : "OFF"), 10, 170);
+  text(&quot;Pump:      &quot; + (pumpOn ? &quot;ON&quot; : &quot;OFF&quot;), 10, 170);
 
   fill(wristAuto ? color(120, 200, 255) : color(255, 200, 80));
-  text("Wrist mode: " + (wristAuto ? "AUTO (IMU)" : "MANUAL (right stick Y)"), 10, 192);
+  text(&quot;Wrist mode: &quot; + (wristAuto ? &quot;AUTO (IMU)&quot; : &quot;MANUAL (right stick Y)&quot;), 10, 192);
 
   fill(160);
   textSize(11);
-  text("Left stick: drive (full push)   D-pad: shoulder/elbow   Right stick: wrist/hand", 10, 230);
-  text("PumpButton: pump   CalButton: IMU re-zero   WristModeButton: AUTO/MANUAL", 10, 247);
+  text(&quot;Left stick: drive (full push)   D-pad: shoulder/elbow   Right stick: wrist/hand&quot;, 10, 230);
+  text(&quot;PumpButton: pump   CalButton: IMU re-zero   WristModeButton: AUTO/MANUAL&quot;, 10, 247);
   fill(220);
-  text("Arduino: " + lastResponse, 10, 275);
+  text(&quot;Arduino: &quot; + lastResponse, 10, 275);
 }
 
 String motorState(int dir) {
-  if (dir > 0) return "FWD";
-  if (dir < 0) return "REV";
-  return "STOP";
+  if (dir &gt; 0) return &quot;FWD&quot;;
+  if (dir &lt; 0) return &quot;REV&quot;;
+  return &quot;STOP&quot;;
 }
 
 void serialEvent(Serial p) {
-  String msg = p.readStringUntil('\n');
+  String msg = p.readStringUntil(&#x27;\n&#x27;);
   if (msg != null) {
     lastResponse = msg.trim();
     println(lastResponse);
   }
-}
-```
-
+}</code></pre>
 </div>
 </details>
 
@@ -2075,9 +2023,7 @@ An earlier, simpler Processing sketch for manual control. Three-axis gamepad map
 <details>
 <summary>Processing (Java) | 90 lines</summary>
 <div class="code-scroll">
-
-```java
-import org.gamecontrolplus.*;
+<pre><code>import org.gamecontrolplus.*;
 import org.gamecontrolplus.gui.*;
 import processing.serial.*;
 import net.java.games.input.*;
@@ -2103,28 +2049,28 @@ void setup() {
   frameRate(50);
 
   control = ControlIO.getInstance(this);
-  cont = control.getMatchedDevice("Test4");
+  cont = control.getMatchedDevice(&quot;Test4&quot;);
 
   if (cont == null) {
-    println("Controller not connected");
+    println(&quot;Controller not connected&quot;);
     System.exit(-1);
   }
 
   println(Serial.list());
   port = new Serial(this, Serial.list()[1], 9600);
-  port.bufferUntil('\n');
+  port.bufferUntil(&#x27;\n&#x27;);
 
   delay(2000); // Wait for Arduino to boot
 }
 
 public void getUserInput() {
-  float baseInput     = cont.getSlider("ServoBase").getValue();
-  float shoulderInput = cont.getSlider("ServoShoulder").getValue();
-  float elbowInput    = cont.getSlider("ServoElbow").getValue();
+  float baseInput     = cont.getSlider(&quot;ServoBase&quot;).getValue();
+  float shoulderInput = cont.getSlider(&quot;ServoShoulder&quot;).getValue();
+  float elbowInput    = cont.getSlider(&quot;ServoElbow&quot;).getValue();
 
-  if (abs(baseInput) > deadzone)     baseAngle     += baseInput * speed;
-  if (abs(shoulderInput) > deadzone) shoulderAngle += shoulderInput * speed;
-  if (abs(elbowInput) > deadzone)    elbowAngle    += elbowInput * speed;
+  if (abs(baseInput) &gt; deadzone)     baseAngle     += baseInput * speed;
+  if (abs(shoulderInput) &gt; deadzone) shoulderAngle += shoulderInput * speed;
+  if (abs(elbowInput) &gt; deadzone)    elbowAngle    += elbowInput * speed;
 
   baseAngle     = constrain(baseAngle, 0, 180);
   shoulderAngle = constrain(shoulderAngle, 0, 180);
@@ -2132,7 +2078,7 @@ public void getUserInput() {
 }
 
 void sendCommand(int servo, int angle) {
-  port.write(servo + " " + angle + "\n");
+  port.write(servo + &quot; &quot; + angle + &quot;\n&quot;);
 }
 
 void draw() {
@@ -2156,19 +2102,17 @@ void draw() {
   // Display on screen
   fill(0);
   textSize(14);
-  text("Base: " + (int)baseAngle, 10, 30);
-  text("Shoulder: " + (int)shoulderAngle, 10, 50);
-  text("Elbow: " + (int)elbowAngle, 10, 70);
-  text("Wrist: AUTO (IMU)", 10, 90);
+  text(&quot;Base: &quot; + (int)baseAngle, 10, 30);
+  text(&quot;Shoulder: &quot; + (int)shoulderAngle, 10, 50);
+  text(&quot;Elbow: &quot; + (int)elbowAngle, 10, 70);
+  text(&quot;Wrist: AUTO (IMU)&quot;, 10, 90);
 }
 
 // Print any feedback from Arduino
 void serialEvent(Serial p) {
-  String msg = p.readStringUntil('\n');
+  String msg = p.readStringUntil(&#x27;\n&#x27;);
   if (msg != null) println(msg.trim());
-}
-```
-
+}</code></pre>
 </div>
 </details>
 
@@ -2181,16 +2125,14 @@ Processing companion for `PumpCheck.ino`. Adds gamepad-based pump toggle to veri
 <details>
 <summary>Processing (Java) | 99 lines</summary>
 <div class="code-scroll">
-
-```java
-// PickMasters — PumpCheckDrive (controller test, paired with PumpCheck.ino)
+<pre><code>// PickMasters — PumpCheckDrive (controller test, paired with PumpCheck.ino)
 //
 // Minimal Processing sketch: reads ONLY the pump button on the Bluetooth
 // gamepad (GameControlPlus, config: data/PickMasters) and toggles the pump on
 // the Arduino. Use this to confirm the whole chain works:
-//   gamepad button -> serial -> Arduino -> pump relay.
+//   gamepad button -&gt; serial -&gt; Arduino -&gt; pump relay.
 //
-// Serial: "P1\n" = pump on, "P0\n" = pump off (9600 baud).
+// Serial: &quot;P1\n&quot; = pump on, &quot;P0\n&quot; = pump off (9600 baud).
 
 import org.gamecontrolplus.*;
 import org.gamecontrolplus.gui.*;
@@ -2205,7 +2147,7 @@ boolean controllerReady = false;
 
 boolean pumpOn      = false;
 boolean prevPumpBtn = false;
-String  lastResponse = "";
+String  lastResponse = &quot;&quot;;
 
 void setup() {
   size(380, 170);
@@ -2214,76 +2156,74 @@ void setup() {
   // Match the controller (same config file as the full DriveControl sketch).
   try {
     control = ControlIO.getInstance(this);
-    cont = control.getMatchedDevice("PickMasters");
+    cont = control.getMatchedDevice(&quot;PickMasters&quot;);
   } catch (Exception e) {
-    println("Warning during controller init: " + e.getMessage());
+    println(&quot;Warning during controller init: &quot; + e.getMessage());
   }
   if (cont == null) {
-    println("Controller not found — check data/PickMasters config");
+    println(&quot;Controller not found — check data/PickMasters config&quot;);
     System.exit(-1);
   }
   controllerReady = true;
 
-  // Pick the Arduino's serial port: prefer the last port that isn't COM1.
+  // Pick the Arduino&#x27;s serial port: prefer the last port that isn&#x27;t COM1.
   String[] ports = Serial.list();
   printArray(ports);
 
   String portName = null;
-  for (int i = ports.length - 1; i >= 0; i--) {
-    if (!ports[i].equals("COM1")) { portName = ports[i]; break; }
+  for (int i = ports.length - 1; i &gt;= 0; i--) {
+    if (!ports[i].equals(&quot;COM1&quot;)) { portName = ports[i]; break; }
   }
-  if (portName == null && ports.length > 0) portName = ports[0];
+  if (portName == null &amp;&amp; ports.length &gt; 0) portName = ports[0];
   if (portName == null) {
-    println("No serial port found — is the Arduino plugged in?");
+    println(&quot;No serial port found — is the Arduino plugged in?&quot;);
     System.exit(-1);
   }
 
-  println("Connecting to " + portName);
+  println(&quot;Connecting to &quot; + portName);
   port = new Serial(this, portName, 9600);
-  port.bufferUntil('\n');
+  port.bufferUntil(&#x27;\n&#x27;);
   delay(2000);   // let the Arduino reboot after the port opens
 }
 
 void draw() {
   // ConcurrentModificationException is a known GCP bug — skip the frame.
   try {
-    if (controllerReady && cont != null) {
-      boolean pumpBtn = cont.getButton("PumpButton").pressed();
-      if (pumpBtn && !prevPumpBtn) {          // rising edge = press
+    if (controllerReady &amp;&amp; cont != null) {
+      boolean pumpBtn = cont.getButton(&quot;PumpButton&quot;).pressed();
+      if (pumpBtn &amp;&amp; !prevPumpBtn) {          // rising edge = press
         pumpOn = !pumpOn;
-        port.write(pumpOn ? "P1\n" : "P0\n");
+        port.write(pumpOn ? &quot;P1\n&quot; : &quot;P0\n&quot;);
       }
       prevPumpBtn = pumpBtn;
     }
   } catch (java.util.ConcurrentModificationException e) {
-    // skip this frame's input
+    // skip this frame&#x27;s input
   }
 
   background(40, 60, 100);
   fill(255);
   textSize(16);
-  text("PickMasters  —  Pump Test", 10, 28);
+  text(&quot;PickMasters  —  Pump Test&quot;, 10, 28);
 
   fill(pumpOn ? color(80, 255, 80) : color(255, 80, 80));
   textSize(22);
-  text("PUMP: " + (pumpOn ? "ON" : "OFF"), 10, 72);
+  text(&quot;PUMP: &quot; + (pumpOn ? &quot;ON&quot; : &quot;OFF&quot;), 10, 72);
 
   fill(200);
   textSize(12);
-  text("Press the PumpButton on the controller to toggle.", 10, 105);
+  text(&quot;Press the PumpButton on the controller to toggle.&quot;, 10, 105);
   fill(220);
-  text("Arduino: " + lastResponse, 10, 140);
+  text(&quot;Arduino: &quot; + lastResponse, 10, 140);
 }
 
 void serialEvent(Serial p) {
-  String msg = p.readStringUntil('\n');
+  String msg = p.readStringUntil(&#x27;\n&#x27;);
   if (msg != null) {
     lastResponse = msg.trim();
     println(lastResponse);
   }
-}
-```
-
+}</code></pre>
 </div>
 </details>
 
@@ -2296,9 +2236,7 @@ Minimal Processing test sketch used during early lab sessions. Basic gamepad-to-
 <details>
 <summary>Processing (Java) | 69 lines</summary>
 <div class="code-scroll">
-
-```java
-import org.gamecontrolplus.*;
+<pre><code>import org.gamecontrolplus.*;
 import org.gamecontrolplus.gui.*;
 import processing.serial.*;
 import net.java.games.input.*;
@@ -2324,28 +2262,28 @@ void setup() {
   frameRate(50);
 
   control = ControlIO.getInstance(this);
-  cont = control.getMatchedDevice("Test4");
+  cont = control.getMatchedDevice(&quot;Test4&quot;);
 
   if (cont == null) {
-    println("Controller not connected");
+    println(&quot;Controller not connected&quot;);
     System.exit(-1);
   }
 
   println(Serial.list());
   port = new Serial(this, Serial.list()[1], 9600);
-  port.bufferUntil('\n');
+  port.bufferUntil(&#x27;\n&#x27;);
 
   delay(2000); // Wait for Arduino to boot
 }
 
 public void getUserInput() {
-  float baseInput     = cont.getSlider("ServoBase").getValue();
-  float shoulderInput = cont.getSlider("ServoShoulder").getValue();
-  float elbowInput    = cont.getSlider("ServoElbow").getValue();
+  float baseInput     = cont.getSlider(&quot;ServoBase&quot;).getValue();
+  float shoulderInput = cont.getSlider(&quot;ServoShoulder&quot;).getValue();
+  float elbowInput    = cont.getSlider(&quot;ServoElbow&quot;).getValue();
 
-  if (abs(baseInput) > deadzone)     baseAngle     += baseInput * speed;
-  if (abs(shoulderInput) > deadzone) shoulderAngle += shoulderInput * speed;
-  if (abs(elbowInput) > deadzone)    elbowAngle    += elbowInput * speed;
+  if (abs(baseInput) &gt; deadzone)     baseAngle     += baseInput * speed;
+  if (abs(shoulderInput) &gt; deadzone) shoulderAngle += shoulderInput * speed;
+  if (abs(elbowInput) &gt; deadzone)    elbowAngle    += elbowInput * speed;
 
   baseAngle     = constrain(baseAngle, 0, 180);
   shoulderAngle = constrain(shoulderAngle, 0, 180);
@@ -2353,7 +2291,7 @@ public void getUserInput() {
 }
 
 void sendCommand(int servo, int angle) {
-  port.write(servo + " " + angle + "\n");
+  port.write(servo + &quot; &quot; + angle + &quot;\n&quot;);
 }
 
 void draw() {
@@ -2377,19 +2315,17 @@ void draw() {
   // Display on screen
   fill(0);
   textSize(14);
-  text("Base: " + (int)baseAngle, 10, 30);
-  text("Shoulder: " + (int)shoulderAngle, 10, 50);
-  text("Elbow: " + (int)elbowAngle, 10, 70);
-  text("Wrist: AUTO (IMU)", 10, 90);
+  text(&quot;Base: &quot; + (int)baseAngle, 10, 30);
+  text(&quot;Shoulder: &quot; + (int)shoulderAngle, 10, 50);
+  text(&quot;Elbow: &quot; + (int)elbowAngle, 10, 70);
+  text(&quot;Wrist: AUTO (IMU)&quot;, 10, 90);
 }
 
 // Print any feedback from Arduino
 void serialEvent(Serial p) {
-  String msg = p.readStringUntil('\n');
+  String msg = p.readStringUntil(&#x27;\n&#x27;);
   if (msg != null) println(msg.trim());
-}
-```
-
+}</code></pre>
 </div>
 </details>
 
