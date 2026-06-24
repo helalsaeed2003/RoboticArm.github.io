@@ -8,7 +8,7 @@ These are the development-stage Arduino and Processing sketches created during t
 
 ---
 
-## `ArmController.ino`
+## [`ArmController.ino`](../Arduino%20Code/ArmController/ArmController.ino)
 
 An earlier version of the manual-mode firmware before PID wrist levelling and the safety interlock were added. Drives servos and DC motors via serial commands from the Processing gamepad sketch. Used during mid-project integration testing.
 
@@ -112,9 +112,13 @@ void setup() {
   setMotorLeft(0);
   setMotorRight(0);
 
+  // I2C — a timeout so a missing/shorted IMU can never freeze the board.
+  // setWireTimeout(us, reset_on_timeout): bail out and reset the bus instead
+  // of blocking forever when the MPU6050 doesn&#x27;t respond.
   Wire.begin();
   Wire.setWireTimeout(3000, true);
 
+  // Detect the MPU6050 before using it — endTransmission() == 0 means it ACKed.
   Wire.beginTransmission(MPU_ADDR);
   imuOk = (Wire.endTransmission(true) == 0);
 
@@ -126,6 +130,7 @@ void setup() {
     delay(200);
     calibrateIMU();
   } else {
+    // No IMU: keep running everything else, just don&#x27;t auto-level the wrist.
     wristAutoMode = false;
     Serial.write(&quot;WARN: IMU not found — wrist auto-level disabled\n&quot;);
   }
@@ -165,6 +170,7 @@ void parseCommand(char *cmd) {
   if (cmd[0] == &#x27;\0&#x27;) return;
 
   if (cmd[0] == &#x27;S&#x27;) {
+    // Combined frame: S&lt;sh&gt;,&lt;el&gt;,&lt;wr&gt;,&lt;ha&gt;,M&lt;l&gt;,&lt;r&gt;,P&lt;p&gt;,W&lt;w&gt;
     int sh, el, wr, ha, l, r, p, w;
     if (sscanf(cmd, &quot;S%d,%d,%d,%d,M%d,%d,P%d,W%d&quot;,
                &amp;sh, &amp;el, &amp;wr, &amp;ha, &amp;l, &amp;r, &amp;p, &amp;w) == 8) {
@@ -177,6 +183,7 @@ void parseCommand(char *cmd) {
 
       wristAutoMode = (w != 0);
       if (!wristAutoMode) {
+        // MANUAL — write exactly what Processing sent
         wristAngle = constrain(wr, 0, 180);
         wristServo.write(wristAngle);
       }
@@ -187,7 +194,7 @@ void parseCommand(char *cmd) {
       rightDir = r;
 
       pumpOn = (p != 0);
-      digitalWrite(PUMP_PIN, pumpOn ? LOW : HIGH);
+      digitalWrite(PUMP_PIN, pumpOn ? LOW : HIGH);   // active LOW
     }
 
   } else if (strcmp(cmd, &quot;cal&quot;) == 0) {
@@ -200,6 +207,7 @@ void parseCommand(char *cmd) {
 }
 
 // ── DC motor control (L298N) ──────────────────────────────────────────────────
+// Left wheel: ENA + IN1/IN2.  dir &gt; 0 = forward, dir &lt; 0 = backward, 0 = stop.
 void setMotorLeft(int dir) {
   if (dir &gt; 0) {
     digitalWrite(IN1, HIGH);
@@ -216,6 +224,7 @@ void setMotorLeft(int dir) {
   }
 }
 
+// Right wheel: ENB + IN3/IN4.  dir &gt; 0 = forward, dir &lt; 0 = backward, 0 = stop.
 void setMotorRight(int dir) {
   if (dir &gt; 0) {
     digitalWrite(IN3, HIGH);
@@ -235,9 +244,11 @@ void setMotorRight(int dir) {
 // ── IMU wrist auto-level ──────────────────────────────────────────────────────
 float readPitch() {
   Wire.beginTransmission(MPU_ADDR);
-  Wire.write(0x3B);
+  Wire.write(0x3B);   // ACCEL_XOUT_H — start of 6-byte accel block
   Wire.endTransmission(false);
 
+  // If the IMU doesn&#x27;t return all 6 bytes (unplugged/glitch), keep the last
+  // pitch instead of computing garbage from -1 reads.
   if (Wire.requestFrom(MPU_ADDR, 6, true) != 6) return currentPitch;
 
   float accelX = (int16_t)(Wire.read() &lt;&lt; 8 | Wire.read()) / 16384.0;
@@ -276,7 +287,7 @@ void printStatus() {
 
 ---
 
-## `ComponentTest.ino`
+## [`ComponentTest.ino`](../Arduino%20Code/ComponentTest/ComponentTest.ino)
 
 Interactive bench-test sketch for every hardware component. Open the Serial Monitor, type a command, and individually test each servo, DC motor direction, pump relay, and IMU reading. Essential for verifying wiring before running the full firmware.
 
@@ -539,12 +550,12 @@ void printMenu() {
 
 ---
 
-## `AutoMode.ino`
+## [`AutoMode.ino`](../Arduino%20Code/AutoMode/AutoMode.ino)
 
 Early automatic-mode prototype. Combines servo control with basic serial commands from the vision script. Predates the fuzzy-logic controller — uses fixed-speed motor commands instead.
 
 <details>
-<summary>Arduino C | 184 lines</summary>
+<summary>Arduino C | 185 lines</summary>
 <div class="code-scroll">
 <pre><code>#include &lt;Wire.h&gt;
 #include &lt;Servo.h&gt;
@@ -736,12 +747,12 @@ void loop() {
 
 ---
 
-## `CameraVisionTest.ino`
+## [`CameraVisionTest.ino`](../Arduino%20Code/CameraVisionTest/CameraVisionTest.ino)
 
-Test firmware for validating the camera-to-Arduino communication loop. Accepts vision commands over serial and drives servos and motors in response. Used to debug the serial protocol between `detect_and_move.py` and the Arduino.
+Test firmware for validating the camera-to-Arduino communication loop. Accepts vision commands over serial and drives servos and motors in response. Used to debug the serial protocol between <code>detect_and_move.py</code> and the Arduino.
 
 <details>
-<summary>Arduino C | 203 lines</summary>
+<summary>Arduino C | 204 lines</summary>
 <div class="code-scroll">
 <pre><code>#include &lt;Wire.h&gt;
 #include &lt;Servo.h&gt;
@@ -952,7 +963,7 @@ void loop() {
 
 ---
 
-## `ManualDrive.ino`
+## [`ManualDrive.ino`](../Arduino%20Code/ManualDrive/ManualDrive.ino)
 
 The original manual-drive firmware written for the L293D motor shield (before it shorted). Uses the AFMotor library. Kept in the repo as a record of the original hardware design and the lesson learned about driver current ratings.
 
@@ -994,6 +1005,9 @@ The original manual-drive firmware written for the L293D motor shield (before it
 #define CAL_BUTTON    2     // INPUT_PULLUP — press to re-zero IMU
 
 // ── DC motors via L293D motor shield ─────────────────────────────────────────
+// Motor 1 = left wheel, Motor 2 = right wheel.
+// If the robot drives backwards when commanded forwards, swap motor wires
+// or flip the sign in the Processing sketch (negate leftY/rightY).
 AF_DCMotor motorLeft(1);
 AF_DCMotor motorRight(2);
 
@@ -1148,7 +1162,7 @@ void calibrateIMU() {
 
 float readPitch() {
   Wire.beginTransmission(MPU_ADDR);
-  Wire.write(0x3B);
+  Wire.write(0x3B);  // ACCEL_XOUT_H — start of 6-byte accel block
   Wire.endTransmission(false);
   Wire.requestFrom((uint8_t)MPU_ADDR, (uint8_t)6, (uint8_t)true);
 
@@ -1165,6 +1179,8 @@ float readPitch() {
 
 void updateWrist() {
   float pitch = readPitch() - pitchOffset;
+  // Positive pitch (arm tilts down) increases wrist angle to compensate.
+  // Negate the sign here if leveling goes the wrong direction.
   wristAngle = constrain((int)(wristCenter + pitch), 0, 180);
   wristServo.write(wristAngle);
 }
@@ -1183,12 +1199,12 @@ void handleCalButton() {
 
 ---
 
-## `SelfLevling.ino`
+## [`SelfLevling.ino`](../Arduino%20Code/SelfLevling/SelfLevling.ino)
 
 Standalone wrist auto-levelling test. Reads the MPU6050 over I²C, computes pitch from accelerometer data, and drives a single servo to keep the wrist level. Used to tune the PID gains before integrating into the full ArmController.
 
 <details>
-<summary>Arduino C | 100 lines</summary>
+<summary>Arduino C | 101 lines</summary>
 <div class="code-scroll">
 <pre><code>#include &lt;Wire.h&gt;
 #include &lt;Servo.h&gt;
@@ -1296,7 +1312,7 @@ void loop() {
 
 ---
 
-## `PickAndMove.ino`
+## [`PickAndMove.ino`](../Arduino%20Code/PickAndMove/PickAndMove.ino)
 
 Earlier version of the automatic-mode firmware. Simpler command set without the fuzzy-logic speed controller — uses fixed PWM values for each direction command.
 
@@ -1439,12 +1455,12 @@ void loop() {
 
 ---
 
-## `ServoTest.ino`
+## [`ServoTest.ino`](../Arduino%20Code/ServoTest/ServoTest.ino)
 
 Minimal sketch to sweep two servos through their range. Used to verify servo wiring, confirm PWM pin assignments, and check for mechanical binding in the 3D-printed joints.
 
 <details>
-<summary>Arduino C | 79 lines</summary>
+<summary>Arduino C | 80 lines</summary>
 <div class="code-scroll">
 <pre><code>#include &lt;Servo.h&gt;
 
@@ -1531,12 +1547,12 @@ void printStatus() {
 
 ---
 
-## `SesnsorTest.ino`
+## [`SesnsorTest.ino`](../Arduino%20Code/SesnsorTest/SesnsorTest.ino)
 
 IMU sensor test. Reads raw accelerometer and gyroscope values from the MPU6050 and prints them to the Serial Monitor. Used to verify I²C communication and check sensor orientation before writing the pitch calculation.
 
 <details>
-<summary>Arduino C | 66 lines</summary>
+<summary>Arduino C | 67 lines</summary>
 <div class="code-scroll">
 <pre><code>#include &lt;Wire.h&gt;
 
@@ -1610,7 +1626,7 @@ void loop() {
 
 ---
 
-## `PumpCheck.ino`
+## [`PumpCheck.ino`](../Arduino%20Code/PumpCheck/PumpCheck.ino)
 
 Minimal pump relay test. Toggles the vacuum pump on and off via serial commands with no other hardware active. Used to isolate and debug pump-related brownout issues before the two-rail power redesign.
 
@@ -1674,12 +1690,12 @@ void handle(char *cmd) {
 
 ---
 
-## `PumpTest.ino`
+## [`PumpTest.ino`](../Arduino%20Code/PumpTest/PumpTest.ino)
 
 Bare-minimum relay toggle. Even simpler than PumpCheck — just turns the relay on for a few seconds and off again. Used for initial hardware verification of the relay module wiring.
 
 <details>
-<summary>Arduino C | 27 lines</summary>
+<summary>Arduino C | 28 lines</summary>
 <div class="code-scroll">
 <pre><code>const int RELAY_PIN = 7;
 
@@ -1714,31 +1730,33 @@ void loop() {
 
 ---
 
-## `Full.ino`
+## [`Full.ino`](../Arduino%20Code/Full/Full.ino)
 
 An early Processing sketch that combined gamepad input with basic serial output. Uses the Firmata protocol to drive servos directly. Predates the separation into DriveControl.pde (manual) and detect_and_move.py (auto).
 
 <details>
-<summary>Processing (Java) | 89 lines</summary>
+<summary>Processing (Java) | 90 lines</summary>
 <div class="code-scroll">
 <pre><code>import org.gamecontrolplus.*;
 import org.gamecontrolplus.gui.*;
 import processing.serial.*;
 import net.java.games.input.*;
-import cc.arduino.*;
-import org.firmata.*;
 
 ControlDevice cont;
 ControlIO control;
-Arduino arduino;
+Serial port;
 
 float baseAngle     = 90;
 float shoulderAngle = 90;
 float elbowAngle    = 90;
-float wristAngle    = 90;
 
-float speed = 4; // degrees per frame — adjust to taste
-float deadzone = 0.2; // ignore small stick drift
+float speed    = 2.0;
+float deadzone = 0.2;
+
+// Track previous angles to only send when changed
+int prevBase     = 90;
+int prevShoulder = 90;
+int prevElbow    = 90;
 
 void setup() {
   size(360, 200);
@@ -1748,54 +1766,73 @@ void setup() {
   cont = control.getMatchedDevice(&quot;Test4&quot;);
 
   if (cont == null) {
-    println(&quot;Not connected&quot;);
+    println(&quot;Controller not connected&quot;);
     System.exit(-1);
   }
 
-  arduino = new Arduino(this, Arduino.list()[1], 57600);
-  arduino.pinMode(9, Arduino.SERVO);
-  arduino.pinMode(10, Arduino.SERVO);
-  arduino.pinMode(11, Arduino.SERVO);
-  arduino.pinMode(12, Arduino.SERVO);
+  println(Serial.list());
+  port = new Serial(this, Serial.list()[1], 9600);
+  port.bufferUntil(&#x27;\n&#x27;);
+
+  delay(2000); // Wait for Arduino to boot
 }
 
 public void getUserInput() {
   float baseInput     = cont.getSlider(&quot;ServoBase&quot;).getValue();
   float shoulderInput = cont.getSlider(&quot;ServoShoulder&quot;).getValue();
   float elbowInput    = cont.getSlider(&quot;ServoElbow&quot;).getValue();
-  float wristInput    = cont.getSlider(&quot;ServoWrist&quot;).getValue();
 
-  // Apply deadzone
   if (abs(baseInput) &gt; deadzone)     baseAngle     += baseInput * speed;
   if (abs(shoulderInput) &gt; deadzone) shoulderAngle += shoulderInput * speed;
   if (abs(elbowInput) &gt; deadzone)    elbowAngle    += elbowInput * speed;
-  if (abs(wristInput) &gt; deadzone)    wristAngle    += wristInput * speed;
 
-  // Clamp to 0-180
   baseAngle     = constrain(baseAngle, 0, 180);
   shoulderAngle = constrain(shoulderAngle, 0, 180);
   elbowAngle    = constrain(elbowAngle, 0, 180);
-  wristAngle    = constrain(wristAngle, 0, 180);
+}
 
-  println(&quot;Base: &quot; + baseAngle + &quot;  Shoulder: &quot; + shoulderAngle +
-          &quot;  Elbow: &quot; + elbowAngle + &quot;  Wrist: &quot; + wristAngle);
+void sendCommand(int servo, int angle) {
+  port.write(servo + &quot; &quot; + angle + &quot;\n&quot;);
 }
 
 void draw() {
   getUserInput();
   background(baseAngle, shoulderAngle, 255);
 
-  arduino.servoWrite(9, (int)baseAngle);
-  arduino.servoWrite(10, (int)shoulderAngle);
-  arduino.servoWrite(11, (int)elbowAngle);
-  arduino.servoWrite(12, (int)wristAngle);
+  // Only send when angle actually changes
+  if ((int)baseAngle != prevBase) {
+    sendCommand(1, (int)baseAngle);
+    prevBase = (int)baseAngle;
+  }
+  if ((int)shoulderAngle != prevShoulder) {
+    sendCommand(2, (int)shoulderAngle);
+    prevShoulder = (int)shoulderAngle;
+  }
+  if ((int)elbowAngle != prevElbow) {
+    sendCommand(3, (int)elbowAngle);
+    prevElbow = (int)elbowAngle;
+  }
+
+  // Display on screen
+  fill(0);
+  textSize(14);
+  text(&quot;Base: &quot; + (int)baseAngle, 10, 30);
+  text(&quot;Shoulder: &quot; + (int)shoulderAngle, 10, 50);
+  text(&quot;Elbow: &quot; + (int)elbowAngle, 10, 70);
+  text(&quot;Wrist: AUTO (IMU)&quot;, 10, 90);
+}
+
+// Print any feedback from Arduino
+void serialEvent(Serial p) {
+  String msg = p.readStringUntil(&#x27;\n&#x27;);
+  if (msg != null) println(msg.trim());
 }</code></pre>
 </div>
 </details>
 
 ---
 
-## `DriveControl.pde`
+## [`DriveControl.pde`](../Arduino%20Code/DriveControl/DriveControl.pde)
 
 Development version of the manual-control gamepad interface. Full button mapping with D-pad, pump toggle, IMU calibration, and wrist AUTO/MANUAL mode switching. Functionally identical to the final version.
 
@@ -1865,6 +1902,8 @@ void setup() {
   size(440, 290);
   frameRate(50);
 
+  // GCP on Windows enumerates every input device (including virtual ones like
+  // FakerInput).  Wrapping init in try/catch lets us recover gracefully.
   try {
     control = ControlIO.getInstance(this);
     cont = control.getMatchedDevice(&quot;PickMasters&quot;);
@@ -1878,6 +1917,9 @@ void setup() {
   }
   controllerReady = true;
 
+  // Pick the Arduino&#x27;s serial port automatically: COM1 is almost always the
+  // PC&#x27;s built-in port, so prefer the last port that isn&#x27;t COM1.  If the
+  // Arduino is unplugged (or its driver is missing) no usable port exists.
   String[] ports = Serial.list();
   printArray(ports);
 
@@ -1906,12 +1948,19 @@ void getUserInput() {
   float rightX = cont.getSlider(&quot;RightX&quot;).getValue();
   float rightY = cont.getSlider(&quot;RightY&quot;).getValue();
 
+  // --- Base DC motors: digital only, single constant speed ---
+  // Stick must be fully pushed (gamepads read negative Y when pushed forward).
+  // Forward/back wins; left/right pivots in place (never mixed with fwd/back).
   if (leftY &lt;= -driveThreshold)      { motorLeft =  1; motorRight =  1; }  // forward
   else if (leftY &gt;= driveThreshold)  { motorLeft = -1; motorRight = -1; }  // backward
   else if (leftX &gt;= driveThreshold)  { motorLeft =  1; motorRight = -1; }  // pivot right
   else if (leftX &lt;= -driveThreshold) { motorLeft = -1; motorRight =  1; }  // pivot left
   else                               { motorLeft =  0; motorRight =  0; }
 
+  // --- Shoulder &amp; elbow on the D-pad (fixed step per frame while held) ---
+  // GameControlPlus hat positions: 0 = released, then clockwise from
+  // 1 = up-left: 2 = up, 3 = up-right, 4 = right, 5 = down-right,
+  // 6 = down, 7 = down-left, 8 = left.
   int pos = cont.getHat(&quot;Dpad&quot;).getPos();
   boolean dUp    = (pos == 1 || pos == 2 || pos == 3);
   boolean dDown  = (pos == 5 || pos == 6 || pos == 7);
@@ -1923,18 +1972,22 @@ void getUserInput() {
   if (dRight) elbowAngle    += dpadStep;
   if (dLeft)  elbowAngle    -= dpadStep;
 
+  // --- Wrist (right stick Y, MANUAL only) &amp; hand (right stick X): DIGITAL ---
+  // Like the drive sticks — the servo only moves at FULL deflection, stepping a
+  // fixed amount per frame. No proportional/rate control: half-pushed does nothing.
   if (!wristAuto) {
-    if (rightY &lt;= -driveThreshold)     wristAngle += stickStep;
-    else if (rightY &gt;= driveThreshold) wristAngle -= stickStep;
+    if (rightY &lt;= -driveThreshold)     wristAngle += stickStep;   // stick up   = wrist up
+    else if (rightY &gt;= driveThreshold) wristAngle -= stickStep;   // stick down = wrist down
   }
-  if (rightX &gt;= driveThreshold)        handAngle += stickStep;
-  else if (rightX &lt;= -driveThreshold)  handAngle -= stickStep;
+  if (rightX &gt;= driveThreshold)        handAngle += stickStep;    // stick right = hand +
+  else if (rightX &lt;= -driveThreshold)  handAngle -= stickStep;    // stick left  = hand -
 
   shoulderAngle = constrain(shoulderAngle, 0, 180);
   elbowAngle    = constrain(elbowAngle,    0, 180);
   wristAngle    = constrain(wristAngle,    0, 180);
   handAngle     = constrain(handAngle,     0, 180);
 
+  // --- Buttons (rising edge only) ---
   boolean pumpBtn = cont.getButton(&quot;PumpButton&quot;).pressed();
   boolean calBtn  = cont.getButton(&quot;CalButton&quot;).pressed();
   boolean modeBtn = cont.getButton(&quot;WristModeButton&quot;).pressed();
@@ -1949,6 +2002,9 @@ void getUserInput() {
 }
 
 void sendState() {
+  // ONE combined message per frame — only when it changed, throttled to
+  // SEND_INTERVAL, written with port.write() (no println), to keep the
+  // Arduino&#x27;s serial buffer from overflowing and dropping the connection.
   String msg = &quot;S&quot; + (int)shoulderAngle + &quot;,&quot; + (int)elbowAngle + &quot;,&quot;
                    + (int)wristAngle + &quot;,&quot; + (int)handAngle
              + &quot;,M&quot; + motorLeft + &quot;,&quot; + motorRight
@@ -1963,6 +2019,9 @@ void sendState() {
 }
 
 void draw() {
+  // ConcurrentModificationException is a known GCP library bug (device list
+  // iterated on two threads simultaneously).  Catching it here lets the sketch
+  // keep running instead of crashing — the missed frame is harmless.
   try {
     getUserInput();
   } catch (java.util.ConcurrentModificationException e) {
@@ -2016,7 +2075,7 @@ void serialEvent(Serial p) {
 
 ---
 
-## `ManualMode.pde`
+## [`ManualMode.pde`](../Arduino%20Code/ManualMode/ManualMode.pde)
 
 An earlier, simpler Processing sketch for manual control. Three-axis gamepad mapping with no serial throttling — replaced by the full DriveControl once the control mapping was finalized.
 
@@ -2118,9 +2177,9 @@ void serialEvent(Serial p) {
 
 ---
 
-## `PumpCheckDrive.pde`
+## [`PumpCheckDrive.pde`](../Arduino%20Code/PumpCheckDrive/PumpCheckDrive.pde)
 
-Processing companion for `PumpCheck.ino`. Adds gamepad-based pump toggle to verify the full input chain: gamepad → Processing → serial → Arduino → relay → pump.
+Processing companion for <code>PumpCheck.ino</code>. Adds gamepad-based pump toggle to verify the full input chain: gamepad → Processing → serial → Arduino → relay → pump.
 
 <details>
 <summary>Processing (Java) | 99 lines</summary>
@@ -2229,7 +2288,7 @@ void serialEvent(Serial p) {
 
 ---
 
-## `School.pde`
+## [`School.pde`](../Arduino%20Code/School/School.pde)
 
 Minimal Processing test sketch used during early lab sessions. Basic gamepad-to-servo serial communication using the Firmata protocol.
 
@@ -2240,22 +2299,20 @@ Minimal Processing test sketch used during early lab sessions. Basic gamepad-to-
 import org.gamecontrolplus.gui.*;
 import processing.serial.*;
 import net.java.games.input.*;
+import cc.arduino.*;
+import org.firmata.*;
 
 ControlDevice cont;
 ControlIO control;
-Serial port;
+Arduino arduino;
 
 float baseAngle     = 90;
 float shoulderAngle = 90;
 float elbowAngle    = 90;
+float wristAngle    = 90;
 
-float speed    = 2.0;
-float deadzone = 0.2;
-
-// Track previous angles to only send when changed
-int prevBase     = 90;
-int prevShoulder = 90;
-int prevElbow    = 90;
+float speed = 4; // degrees per frame — adjust to taste
+float deadzone = 0.2; // ignore small stick drift
 
 void setup() {
   size(360, 200);
@@ -2265,66 +2322,47 @@ void setup() {
   cont = control.getMatchedDevice(&quot;Test4&quot;);
 
   if (cont == null) {
-    println(&quot;Controller not connected&quot;);
+    println(&quot;Not connected&quot;);
     System.exit(-1);
   }
 
-  println(Serial.list());
-  port = new Serial(this, Serial.list()[1], 9600);
-  port.bufferUntil(&#x27;\n&#x27;);
-
-  delay(2000); // Wait for Arduino to boot
+  arduino = new Arduino(this, Arduino.list()[1], 57600);
+  arduino.pinMode(9, Arduino.SERVO);
+  arduino.pinMode(10, Arduino.SERVO);
+  arduino.pinMode(11, Arduino.SERVO);
+  arduino.pinMode(12, Arduino.SERVO);
 }
 
 public void getUserInput() {
   float baseInput     = cont.getSlider(&quot;ServoBase&quot;).getValue();
   float shoulderInput = cont.getSlider(&quot;ServoShoulder&quot;).getValue();
   float elbowInput    = cont.getSlider(&quot;ServoElbow&quot;).getValue();
+  float wristInput    = cont.getSlider(&quot;ServoWrist&quot;).getValue();
 
+  // Apply deadzone
   if (abs(baseInput) &gt; deadzone)     baseAngle     += baseInput * speed;
   if (abs(shoulderInput) &gt; deadzone) shoulderAngle += shoulderInput * speed;
   if (abs(elbowInput) &gt; deadzone)    elbowAngle    += elbowInput * speed;
+  if (abs(wristInput) &gt; deadzone)    wristAngle    += wristInput * speed;
 
+  // Clamp to 0-180
   baseAngle     = constrain(baseAngle, 0, 180);
   shoulderAngle = constrain(shoulderAngle, 0, 180);
   elbowAngle    = constrain(elbowAngle, 0, 180);
-}
+  wristAngle    = constrain(wristAngle, 0, 180);
 
-void sendCommand(int servo, int angle) {
-  port.write(servo + &quot; &quot; + angle + &quot;\n&quot;);
+  println(&quot;Base: &quot; + baseAngle + &quot;  Shoulder: &quot; + shoulderAngle +
+          &quot;  Elbow: &quot; + elbowAngle + &quot;  Wrist: &quot; + wristAngle);
 }
 
 void draw() {
   getUserInput();
   background(baseAngle, shoulderAngle, 255);
 
-  // Only send when angle actually changes
-  if ((int)baseAngle != prevBase) {
-    sendCommand(1, (int)baseAngle);
-    prevBase = (int)baseAngle;
-  }
-  if ((int)shoulderAngle != prevShoulder) {
-    sendCommand(2, (int)shoulderAngle);
-    prevShoulder = (int)shoulderAngle;
-  }
-  if ((int)elbowAngle != prevElbow) {
-    sendCommand(3, (int)elbowAngle);
-    prevElbow = (int)elbowAngle;
-  }
-
-  // Display on screen
-  fill(0);
-  textSize(14);
-  text(&quot;Base: &quot; + (int)baseAngle, 10, 30);
-  text(&quot;Shoulder: &quot; + (int)shoulderAngle, 10, 50);
-  text(&quot;Elbow: &quot; + (int)elbowAngle, 10, 70);
-  text(&quot;Wrist: AUTO (IMU)&quot;, 10, 90);
-}
-
-// Print any feedback from Arduino
-void serialEvent(Serial p) {
-  String msg = p.readStringUntil(&#x27;\n&#x27;);
-  if (msg != null) println(msg.trim());
+  arduino.servoWrite(9, (int)baseAngle);
+  arduino.servoWrite(10, (int)shoulderAngle);
+  arduino.servoWrite(11, (int)elbowAngle);
+  arduino.servoWrite(12, (int)wristAngle);
 }</code></pre>
 </div>
 </details>
