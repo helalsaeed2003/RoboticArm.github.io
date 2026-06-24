@@ -1,4 +1,4 @@
-# Appendix A — Bill of Materials
+# Bill of Materials
 
 [← Back to Home](../index.md)
 

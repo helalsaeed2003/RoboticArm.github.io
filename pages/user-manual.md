@@ -1,4 +1,4 @@
-# Appendix B — User Manual
+# User Manual
 
 [← Back to Home](../index.md)
 

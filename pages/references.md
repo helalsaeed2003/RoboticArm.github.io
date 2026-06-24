@@ -1,4 +1,4 @@
-# 15. References
+# References
 
 [← Back to Home](../index.md)
 
