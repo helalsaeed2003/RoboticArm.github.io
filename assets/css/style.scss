@@ -3,6 +3,19 @@
 
 @import "{{ site.theme }}";
 
+/* ── Banner logo ────────────────────────────────────────────────────────── */
+.page-header {
+  text-align: center;
+}
+
+.banner-logo {
+  width: 120px;
+  display: block;
+  margin: 0 auto 16px auto;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
 /* ── Code blocks ─────────────────────────────────────────────────────────── */
 pre {
   background: #0d1117 !important;
