@@ -1,3 +1,5 @@
+## [Introduction](pages/introduction.md)
+
 | Member | Role |
 |--------|------|
 | Leen | Group Leader — Computer Vision & Project Coordination |
@@ -7,6 +9,8 @@
 ![Final assembled robotic arm and mobile base](media/figure1.jpg)
 
 PickMasters is a mobile 4-DOF robotic arm with computer vision that can scan a workspace, identify objects, drive toward them, and pick them up. It runs in two modes: fully manual via a Bluetooth gamepad, or semi-automatic where a YOLOv11 model detects and locks onto objects while a fuzzy-logic controller steers the wheeled base to centre on the target. The end effector is a dual-gripper — a vacuum suction cup for the primary pick path and a motorised claw as backup. An MPU6050 IMU on the wrist feeds a PID loop that keeps the suction cup pointing straight down regardless of arm pose.
+
+See the [Introduction page](pages/introduction.md) for the full executive summary, problem definition, and project management details.
 
 Everything here — the CAD files, the firmware, the vision scripts, the control logic — is documented well enough that another team can reproduce the system from this repository and the linked report sections below.
 
