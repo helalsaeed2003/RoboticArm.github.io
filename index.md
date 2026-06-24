@@ -1,6 +1,8 @@
 # PickMasters — Smart Pick-and-Place Robotic System
 
-![Abu Dhabi University](media/Abu_Dhabi_University.png)
+<p align="center">
+  <img src="media/Abu_Dhabi_University.png" alt="Abu Dhabi University" width="150">
+</p>
 
 ## MEC 483: Mechatronics System Design — Abu Dhabi University, Spring 2026
 
@@ -80,7 +82,7 @@ The Python host script for automatic mode. It loads a YOLOv11n model (`best.pt`,
 
 The YOLOv11n model was trained on a Google Colab Tesla T4 for 50 epochs at 640×640. Training data: 237 images per class across five classes (Ball, Bolt, Compass, Egg, Screw), collected with the same Logitech webcam, annotated in Roboflow with augmentation (flips, rotation, brightness). The nano variant was chosen so inference runs at ~15 fps on a laptop CPU. Detection confidence is >90% for bolt, ball, compass, and screw; 85–95% for egg depending on lighting.
 
-![Live YOLOv11 detection — all five object classes with confidence scores](media/figure18.jpg)
+<img src="media/figure18.jpg" alt="Live YOLOv11 detection — all five object classes with confidence scores" width="100%">
 
 ### [DriveControl.pde — Manual Gamepad Interface](pages/software-design.md)
 
@@ -94,7 +96,7 @@ The Processing IDE sketch for manual teleoperation. It reads a Bluetooth gamepad
 
 The vision pipeline has four stages. First, 237 images per class are captured with the deployment camera under varied lighting and angles — training on clean backgrounds caused excessive false positives, so the second iteration used realistic workspace backgrounds. Second, images are uploaded to Roboflow for bounding-box annotation and augmentation (flips, rotation, brightness). Third, the augmented dataset is pulled into Google Colab via the Roboflow API and used to train YOLOv11n for 50 epochs at 640×640 on a Tesla T4 GPU. Fourth, the best checkpoint (`best.pt`) is deployed into `detect_and_move.py` for real-time inference.
 
-![Roboflow annotation workspace](media/figure16.png)
+<img src="media/figure16.png" alt="Roboflow annotation workspace" width="100%">
 
 ---
 

@@ -88,6 +88,12 @@ img {
   margin: 1em 0;
 }
 
+img[alt="Abu Dhabi University"] {
+  box-shadow: none;
+  border-radius: 0;
+  margin: 0;
+}
+
 /* ── Navigation links ────────────────────────────────────────────────────── */
 a[href*="index.md"] {
   display: inline-block;
