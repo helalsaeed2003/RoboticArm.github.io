@@ -140,9 +140,9 @@ The immediate next step is completing camera-to-workspace coordinate mapping and
 | [Bill of Materials](pages/bill-of-materials.md) | Complete parts list with quantities |
 | [User Manual](pages/user-manual.md) | Power-on/off sequence, manual and automatic mode operation |
 | [Software Listings](pages/software-listings.md) | Links to all four source files in the repo |
-| [`Final Code/`](Final%20Code/) | Production firmware, vision script, and trained model |
-| [`Arduino Code/`](Arduino%20Code/) | Development-stage sketches and component tests |
-| [`OpenCV/`](OpenCV/) | Vision development scripts and model files |
+| [Final Code](pages/final-code.md) | Production firmware, vision script, and trained model |
+| [Development Sketches](pages/arduino-code.md) | Development-stage Arduino and Processing sketches |
+| [Vision Scripts](pages/opencv-code.md) | Vision development scripts and model files |
 
 ---
 

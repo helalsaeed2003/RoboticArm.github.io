@@ -1,4 +1,4 @@
-# 1. Executive Summary
+# Executive Summary
 
 [← Back to Home](../index.md)
 

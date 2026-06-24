@@ -1,4 +1,4 @@
-# Appendix C — Software Listings
+# Software Listings
 
 [← Back to Home](../index.md)
 
