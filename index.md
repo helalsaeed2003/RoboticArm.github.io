@@ -136,6 +136,7 @@ The immediate next step is completing camera-to-workspace coordinate mapping and
 
 | Resource | Description |
 |----------|-------------|
+| [Presentations](pages/presentations.md) | Weekly progress slide decks from Week 2 through Week 12 |
 | [References](pages/references.md) | Full bibliography — Bolton, Spong, Craig, Nise, YOLO, OpenCV, ROS, datasheets |
 | [Bill of Materials](pages/bill-of-materials.md) | Complete parts list with quantities |
 | [User Manual](pages/user-manual.md) | Power-on/off sequence, manual and automatic mode operation |
